@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
 import Image from 'next/image';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'] });
+const montserrat = Montserrat({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export const metadata: Metadata = {
   title: 'Events - Missouri Young Democrats',
@@ -18,9 +18,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={montserrat.className}>
+        {/* Background */}
+        <div
+          className="fixed inset-0 z-0"
+          style={{
+            backgroundImage: 'url(/Blue-Gradient-Background.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
+          }}
+        />
+
         {/* Navigation */}
-        <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <nav className="relative z-50 sticky top-0">
           <div className="container-custom">
             <div className="flex items-center justify-between h-20">
               {/* Logo */}
@@ -31,6 +43,7 @@ export default function RootLayout({
                   width={200}
                   height={50}
                   className="h-12 w-auto"
+                  priority
                 />
               </Link>
 
@@ -38,44 +51,44 @@ export default function RootLayout({
               <div className="hidden md:flex items-center space-x-8">
                 <Link
                   href="https://moyoungdemocrats.org/our-team"
-                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                  className="text-white hover:text-white/80 font-bold transition-colors uppercase text-sm tracking-tight"
                 >
                   OUR TEAM
                 </Link>
                 <Link
                   href="https://moyoungdemocrats.org/chapters"
-                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                  className="text-white hover:text-white/80 font-bold transition-colors uppercase text-sm tracking-tight"
                 >
                   CHAPTERS
                 </Link>
                 <Link
                   href="https://moyoungdemocrats.org/about"
-                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                  className="text-white hover:text-white/80 font-bold transition-colors uppercase text-sm tracking-tight"
                 >
                   ABOUT
                 </Link>
                 <Link
                   href="https://moyoungdemocrats.org/donate"
-                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                  className="text-white hover:text-white/80 font-bold transition-colors uppercase text-sm tracking-tight"
                 >
                   DONATE
                 </Link>
                 <Link
                   href="https://moyoungdemocrats.org/contact"
-                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                  className="text-white hover:text-white/80 font-bold transition-colors uppercase text-sm tracking-tight"
                 >
                   CONTACT
                 </Link>
                 <Link
                   href="https://moyoungdemocrats.org/members"
-                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                  className="text-white hover:text-white/80 font-bold transition-colors uppercase text-sm tracking-tight"
                 >
                   MEMBERS
                 </Link>
               </div>
 
               {/* Mobile Menu Button */}
-              <button className="md:hidden text-gray-700">
+              <button className="md:hidden text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -84,21 +97,9 @@ export default function RootLayout({
           </div>
         </nav>
 
-        {/* Main Content with Background */}
-        <main className="min-h-screen relative">
-          <div
-            className="fixed inset-0 z-0"
-            style={{
-              backgroundImage: 'url(/Blue-Gradient-Background.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundAttachment: 'fixed'
-            }}
-          />
-          <div className="relative z-10">
-            {children}
-          </div>
+        {/* Main Content */}
+        <main className="min-h-screen relative z-10">
+          {children}
         </main>
 
         {/* Footer */}
@@ -131,17 +132,35 @@ export default function RootLayout({
                 <Image src="/icons/icons8-email-100 copy.png" alt="Email" width={32} height={32} />
               </a>
             </div>
+          </div>
 
-            {/* Paid For Banner */}
-            <div className="flex justify-center">
-              <Image
-                src="/paid-for-banner.png"
-                alt="Paid for by Missouri Young Democrats"
-                width={400}
-                height={100}
-                className="max-w-full h-auto"
-              />
+          {/* Moving Donation Banner */}
+          <a
+            href="https://secure.actblue.com/donate/moyd"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block overflow-hidden py-4"
+            style={{ backgroundColor: '#3B82C6' }}
+          >
+            <div className="marquee-container">
+              <div className="marquee-content">
+                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
+                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
+                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
+                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
+              </div>
             </div>
+          </a>
+
+          {/* Paid For Banner */}
+          <div className="flex justify-center py-8">
+            <Image
+              src="/paid-for-banner.png"
+              alt="Paid for by Missouri Young Democrats"
+              width={400}
+              height={100}
+              className="max-w-full h-auto"
+            />
           </div>
         </footer>
       </body>
