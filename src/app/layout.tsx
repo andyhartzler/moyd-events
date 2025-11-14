@@ -45,9 +45,13 @@ export default function RootLayout({
               <Image
                 src="/text-logo-960png.png"
                 alt="Missouri Young Democrats"
-                width={200}
-                height={50}
-                className="h-12 w-auto"
+                width={204}
+                height={68}
+                className="w-auto"
+                style={{
+                  height: '68px',
+                  width: '204px'
+                }}
                 priority
               />
             </Link>
