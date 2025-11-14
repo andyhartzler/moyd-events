@@ -47,62 +47,52 @@ export default async function EventDetailPage({
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="py-8">
       {/* Back Button */}
-      <div className="bg-white border-b">
-        <div className="container-custom py-4">
-          <Link
-            href="/"
-            className="inline-flex items-center text-primary hover:text-primary-700 font-medium transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Link>
-        </div>
+      <div className="container-custom mb-6">
+        <Link
+          href="/"
+          className="inline-flex items-center text-[#273351] hover:opacity-70 font-medium transition-opacity"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Events
+        </Link>
       </div>
 
-      {/* Hero Section */}
-      <section className="gradient-primary text-white py-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="container-custom relative z-10">
-          <div className="max-w-4xl mx-auto">
+      {/* Main Content */}
+      <div className="container-custom py-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Event Header */}
+          <div className="mb-8">
             {event.event_type && (
-              <span className="inline-block bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">
+              <span className="inline-block bg-[#273351] text-white px-4 py-1 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">
                 {event.event_type}
               </span>
             )}
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#273351] mb-4">
               {event.title}
             </h1>
-            <div className="flex flex-wrap gap-6 text-lg">
+            <div className="flex flex-wrap gap-6 text-gray-700">
               <div className="flex items-center">
-                <Calendar className="w-6 h-6 mr-3" />
+                <Calendar className="w-5 h-5 mr-2 text-[#273351]" />
                 <span>{formatEventDate(event.event_date)}</span>
               </div>
               {event.location && (
                 <div className="flex items-center">
-                  <MapPin className="w-6 h-6 mr-3" />
+                  <MapPin className="w-5 h-5 mr-2 text-[#273351]" />
                   <span>{event.location}</span>
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Main Content */}
-      <div className="container-custom py-12">
-        <div className="max-w-4xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Column */}
             <div className="lg:col-span-2 space-y-8">
               {/* Description */}
               {event.description && (
-                <div className="bg-white rounded-xl shadow-soft p-8">
-                  <h2 className="text-2xl font-bold text-primary mb-4 flex items-center">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
                     <Info className="w-6 h-6 mr-3" />
                     About This Event
                   </h2>
@@ -116,8 +106,8 @@ export default async function EventDetailPage({
 
               {/* Location Details */}
               {event.location && (
-                <div className="bg-white rounded-xl shadow-soft p-8">
-                  <h2 className="text-2xl font-bold text-primary mb-4 flex items-center">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
                     <MapPin className="w-6 h-6 mr-3" />
                     Location
                   </h2>
@@ -136,17 +126,17 @@ export default async function EventDetailPage({
               <div className="sticky top-24 space-y-6">
                 {/* RSVP Card */}
                 {event.rsvp_enabled && (
-                  <div className="bg-white rounded-xl shadow-medium p-6 border-2 border-primary-100">
-                    <h3 className="text-xl font-bold text-primary mb-4">RSVP for Event</h3>
+                  <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-[#273351]/20">
+                    <h3 className="text-xl font-bold text-[#273351] mb-4">RSVP for Event</h3>
 
                     {/* Attendance Stats */}
                     <div className="space-y-4 mb-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <Users className="w-5 h-5 text-primary" />
+                          <Users className="w-5 h-5 text-[#273351]" />
                           <span className="font-semibold text-gray-700">Attending</span>
                         </div>
-                        <span className="text-2xl font-bold text-primary">{count || 0}</span>
+                        <span className="text-2xl font-bold text-[#273351]">{count || 0}</span>
                       </div>
 
                       {event.max_attendees && (
@@ -156,7 +146,7 @@ export default async function EventDetailPage({
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-primary h-2 rounded-full transition-all duration-300"
+                              className="bg-[#273351] h-2 rounded-full transition-all duration-300"
                               style={{ width: `${attendancePercentage}%` }}
                             ></div>
                           </div>
@@ -177,11 +167,11 @@ export default async function EventDetailPage({
                 )}
 
                 {/* Event Details Card */}
-                <div className="bg-white rounded-xl shadow-soft p-6">
-                  <h3 className="text-lg font-bold text-primary mb-4">Event Details</h3>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-6">
+                  <h3 className="text-lg font-bold text-[#273351] mb-4">Event Details</h3>
                   <div className="space-y-4 text-sm">
                     <div className="flex items-start space-x-3">
-                      <Calendar className="w-5 h-5 text-primary mt-0.5" />
+                      <Calendar className="w-5 h-5 text-[#273351] mt-0.5" />
                       <div>
                         <div className="font-semibold text-gray-700">Date & Time</div>
                         <div className="text-gray-600">{formatEventDate(event.event_date)}</div>
@@ -190,7 +180,7 @@ export default async function EventDetailPage({
 
                     {event.rsvp_deadline && (
                       <div className="flex items-start space-x-3">
-                        <Clock className="w-5 h-5 text-primary mt-0.5" />
+                        <Clock className="w-5 h-5 text-[#273351] mt-0.5" />
                         <div>
                           <div className="font-semibold text-gray-700">RSVP Deadline</div>
                           <div className="text-gray-600">
@@ -203,13 +193,13 @@ export default async function EventDetailPage({
                 </div>
 
                 {/* Share Card */}
-                <div className="bg-primary-50 rounded-xl p-6 text-center">
-                  <Share2 className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <h3 className="font-bold text-primary mb-2">Share This Event</h3>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center shadow-soft">
+                  <Share2 className="w-8 h-8 text-[#273351] mx-auto mb-3" />
+                  <h3 className="font-bold text-[#273351] mb-2">Share This Event</h3>
                   <p className="text-sm text-gray-600 mb-4">
                     Help spread the word about this event
                   </p>
-                  <button className="text-primary hover:text-primary-700 font-semibold text-sm">
+                  <button className="text-[#273351] hover:opacity-70 font-semibold text-sm transition-opacity">
                     Share on Social Media
                   </button>
                 </div>
