@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { QrScanner } from '@yudiel/react-qr-scanner';
+import { Scanner } from '@yudiel/react-qr-scanner';
 import { createClient } from '@/lib/supabase/client';
 import { CheckCircle, XCircle } from 'lucide-react';
 
@@ -99,8 +99,12 @@ export function EventQRScanner({ eventId }: QRScannerProps) {
     <div className="space-y-4">
       <div className="relative aspect-square max-w-md mx-auto bg-black rounded-lg overflow-hidden">
         {scanning && !result ? (
-          <QrScanner
-            onDecode={handleScan}
+          <Scanner
+            onScan={(result) => {
+              if (result && result.length > 0) {
+                handleScan(result[0].rawValue);
+              }
+            }}
             onError={(error) => console.error(error)}
           />
         ) : result ? (
