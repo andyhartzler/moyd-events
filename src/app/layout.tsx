@@ -37,6 +37,8 @@ export default function RootLayout({
           <div className="header-title-nav-wrapper flex items-center justify-between" style={{
             paddingLeft: '2.7vw',
             paddingRight: '2.7vw',
+            paddingTop: '20px',
+            paddingBottom: '20px',
             minHeight: '68px',
             height: 'auto'
           }}>
@@ -45,12 +47,12 @@ export default function RootLayout({
               <Image
                 src="/text-logo-960png.png"
                 alt="Missouri Young Democrats"
-                width={204}
-                height={68}
+                width={143}
+                height={48}
                 className="w-auto"
                 style={{
-                  height: '68px',
-                  width: '204px'
+                  height: '48px',
+                  width: '143px'
                 }}
                 priority
               />
