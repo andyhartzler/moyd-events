@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
-import { Calendar, Users, MapPin, Mail, Facebook, Twitter, Instagram } from 'lucide-react';
+import Image from 'next/image';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'] });
 
 export const metadata: Metadata = {
-  title: 'MOYD Events - Missouri Young Democrats',
+  title: 'Events - Missouri Young Democrats',
   description: 'Join us at Missouri Young Democrats events. Connect, organize, and make a difference in our community.',
 };
 
@@ -20,50 +20,62 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         {/* Navigation */}
-        <nav className="gradient-primary shadow-lg sticky top-0 z-50">
+        <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="container-custom">
             <div className="flex items-center justify-between h-20">
               {/* Logo */}
-              <Link href="/" className="flex items-center space-x-3 group">
-                <div className="bg-white p-2 rounded-lg group-hover:scale-105 transition-transform">
-                  <Calendar className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <div className="text-white font-bold text-xl leading-tight">MOYD Events</div>
-                  <div className="text-primary-200 text-xs">Missouri Young Democrats</div>
-                </div>
+              <Link href="https://moyoungdemocrats.org" className="flex items-center">
+                <Image
+                  src="/text-logo-960png.png"
+                  alt="Missouri Young Democrats"
+                  width={200}
+                  height={50}
+                  className="h-12 w-auto"
+                />
               </Link>
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-8">
                 <Link
-                  href="/"
-                  className="text-white hover:text-primary-100 font-medium transition-colors"
+                  href="https://moyoungdemocrats.org/our-team"
+                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
                 >
-                  Events
+                  OUR TEAM
                 </Link>
                 <Link
-                  href="/my-events"
-                  className="text-white hover:text-primary-100 font-medium transition-colors"
+                  href="https://moyoungdemocrats.org/chapters"
+                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
                 >
-                  My Events
+                  CHAPTERS
                 </Link>
                 <Link
-                  href="/admin/events"
-                  className="text-white hover:text-primary-100 font-medium transition-colors"
+                  href="https://moyoungdemocrats.org/about"
+                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
                 >
-                  Admin
+                  ABOUT
                 </Link>
                 <Link
-                  href="/contact"
-                  className="bg-white text-primary px-5 py-2 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+                  href="https://moyoungdemocrats.org/donate"
+                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
                 >
-                  Get Involved
+                  DONATE
+                </Link>
+                <Link
+                  href="https://moyoungdemocrats.org/contact"
+                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                >
+                  CONTACT
+                </Link>
+                <Link
+                  href="https://moyoungdemocrats.org/members"
+                  className="text-gray-700 hover:text-[#273351] font-medium transition-colors uppercase text-sm"
+                >
+                  MEMBERS
                 </Link>
               </div>
 
               {/* Mobile Menu Button */}
-              <button className="md:hidden text-white">
+              <button className="md:hidden text-gray-700">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -72,77 +84,63 @@ export default function RootLayout({
           </div>
         </nav>
 
-        {/* Main Content */}
-        <main className="min-h-screen">{children}</main>
+        {/* Main Content with Background */}
+        <main className="min-h-screen relative">
+          <div
+            className="fixed inset-0 z-0"
+            style={{
+              backgroundImage: 'url(/Blue-Gradient-Background.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed'
+            }}
+          />
+          <div className="relative z-10">
+            {children}
+          </div>
+        </main>
 
         {/* Footer */}
-        <footer className="bg-primary-900 text-white mt-20">
+        <footer className="relative z-10" style={{ backgroundColor: '#273351' }}>
           <div className="container-custom py-12">
-            <div className="grid md:grid-cols-4 gap-8">
-              {/* About */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold mb-4">Missouri Young Democrats</h3>
-                <p className="text-primary-200 text-sm leading-relaxed">
-                  Empowering the next generation of Missouri leaders through action, advocacy, and community engagement.
-                </p>
-                <div className="flex space-x-4 pt-2">
-                  <a href="#" className="text-primary-300 hover:text-white transition-colors">
-                    <Facebook className="w-5 h-5" />
-                  </a>
-                  <a href="#" className="text-primary-300 hover:text-white transition-colors">
-                    <Twitter className="w-5 h-5" />
-                  </a>
-                  <a href="#" className="text-primary-300 hover:text-white transition-colors">
-                    <Instagram className="w-5 h-5" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Quick Links */}
-              <div>
-                <h4 className="font-semibold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-primary-200">
-                  <li><Link href="/" className="hover:text-white transition-colors">All Events</Link></li>
-                  <li><Link href="/my-events" className="hover:text-white transition-colors">My Events</Link></li>
-                  <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                  <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                </ul>
-              </div>
-
-              {/* Get Involved */}
-              <div>
-                <h4 className="font-semibold mb-4">Get Involved</h4>
-                <ul className="space-y-2 text-primary-200">
-                  <li><Link href="/volunteer" className="hover:text-white transition-colors">Volunteer</Link></li>
-                  <li><Link href="/donate" className="hover:text-white transition-colors">Donate</Link></li>
-                  <li><Link href="/membership" className="hover:text-white transition-colors">Become a Member</Link></li>
-                  <li><Link href="/resources" className="hover:text-white transition-colors">Resources</Link></li>
-                </ul>
-              </div>
-
-              {/* Contact */}
-              <div>
-                <h4 className="font-semibold mb-4">Contact Us</h4>
-                <ul className="space-y-3 text-primary-200 text-sm">
-                  <li className="flex items-start space-x-2">
-                    <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>info@moyoungdemocrats.org</span>
-                  </li>
-                  <li className="flex items-start space-x-2">
-                    <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>Missouri, USA</span>
-                  </li>
-                </ul>
-              </div>
+            {/* Social Media Icons */}
+            <div className="flex justify-center items-center space-x-6 mb-8">
+              <a href="https://www.instagram.com/moyoungdems" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/icons8-instagram-100.png" alt="Instagram" width={32} height={32} />
+              </a>
+              <a href="https://www.facebook.com/YoungDemsMO" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/icons8-facebook-100.png" alt="Facebook" width={32} height={32} />
+              </a>
+              <a href="https://www.threads.net/@moyoungdems" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/new-Threads-app-icon-white-png-small-size.png" alt="Threads" width={32} height={32} />
+              </a>
+              <a href="https://twitter.com/MOYoungDems" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/icons8-x-100.png" alt="X (Twitter)" width={32} height={32} />
+              </a>
+              <a href="https://bsky.app/profile/moyoungdems.bsky.social" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/icons8-bluesky-100.png" alt="Bluesky" width={32} height={32} />
+              </a>
+              <a href="https://www.tiktok.com/@moyoungdems" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/tiktok-100.png" alt="TikTok" width={32} height={32} />
+              </a>
+              <a href="https://www.reddit.com/r/MOYoungDems" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/icons8-reddit-240.png" alt="Reddit" width={32} height={32} />
+              </a>
+              <a href="mailto:info@moyoungdemocrats.org" className="hover:opacity-80 transition-opacity">
+                <Image src="/icons/icons8-email-100 copy.png" alt="Email" width={32} height={32} />
+              </a>
             </div>
 
-            {/* Bottom Bar */}
-            <div className="border-t border-primary-700 mt-8 pt-8 text-center text-primary-300 text-sm">
-              <p>© {new Date().getFullYear()} Missouri Young Democrats. All rights reserved.</p>
-              <div className="flex justify-center space-x-6 mt-2">
-                <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-              </div>
+            {/* Paid For Banner */}
+            <div className="flex justify-center">
+              <Image
+                src="/paid-for-banner.png"
+                alt="Paid for by Missouri Young Democrats"
+                width={400}
+                height={100}
+                className="max-w-full h-auto"
+              />
             </div>
           </div>
         </footer>
