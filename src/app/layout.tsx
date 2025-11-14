@@ -48,10 +48,6 @@ export default function RootLayout({
                 width={204}
                 height={68}
                 className="w-auto"
-                style={{
-                  height: '68px',
-                  width: '204px'
-                }}
                 priority
               />
             </Link>
