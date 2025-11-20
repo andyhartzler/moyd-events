@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Info } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Info, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
@@ -163,6 +163,25 @@ export default async function EventDetailPage({
                         </p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Check-In Card */}
+                {event.checkin_enabled && (
+                  <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-green-600/20">
+                    <h3 className="text-xl font-bold text-[#273351] mb-4 flex items-center">
+                      <CheckCircle className="w-6 h-6 mr-2 text-green-600" />
+                      Event Check-In
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Attending this event? Check in now to confirm your presence.
+                    </p>
+                    <Link
+                      href={`/events/${event.id}/checkin`}
+                      className="block w-full text-center bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md"
+                    >
+                      Check In to Event
+                    </Link>
                   </div>
                 )}
 
