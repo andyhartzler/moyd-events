@@ -22,6 +22,22 @@ export interface GuestData {
   occupation: string;
 }
 
+// Helper function to determine if someone qualifies as a member
+// Must be under 36 and live in Missouri
+export function isMemberEligible(dateOfBirth: string, state: string): boolean {
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  // Adjust age if birthday hasn't occurred this year
+  const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ? age - 1
+    : age;
+
+  return actualAge < 36 && state === 'MO';
+}
+
 export function GuestRegistrationForm({ phoneNumber, onSubmit, onBack, loading }: GuestRegistrationFormProps) {
   const [formData, setFormData] = useState<GuestData>({
     name: '',

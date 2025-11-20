@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { PhoneNumberLookup } from './PhoneNumberLookup';
-import { GuestRegistrationForm, GuestData } from './GuestRegistrationForm';
+import { GuestRegistrationForm, GuestData, isMemberEligible } from './GuestRegistrationForm';
 import { CheckCircle, Calendar, MapPin, ArrowLeft, DollarSign, Heart } from 'lucide-react';
 import { formatEventDate } from '@/lib/utils/formatters';
 import Link from 'next/link';
@@ -154,6 +154,10 @@ export function SelfCheckIn({ event, existingRSVP, memberInfo }: SelfCheckInProp
     setError(null);
 
     try {
+      // Determine if they qualify as a member (under 36 and living in MO)
+      const isEligible = isMemberEligible(guestData.date_of_birth, guestData.state);
+      const memberStatus = isEligible ? 'active' : 'guest';
+
       // First, create a member record for the guest
       const { data: newMember, error: memberError } = await supabase
         .from('members')
@@ -167,7 +171,7 @@ export function SelfCheckIn({ event, existingRSVP, memberInfo }: SelfCheckInProp
           state: guestData.state,
           zip_code: guestData.zip_code,
           occupation: guestData.occupation,
-          member_status: 'guest',
+          member_status: memberStatus,
         })
         .select()
         .single();
@@ -377,6 +381,7 @@ export function SelfCheckIn({ event, existingRSVP, memberInfo }: SelfCheckInProp
               onPersonFound={handlePersonFound}
               onNotFound={handleNotFound}
               loading={loading}
+              eventId={event.id}
             />
           </div>
         ) : state === 'confirm_person' ? (

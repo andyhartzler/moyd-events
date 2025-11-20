@@ -8,11 +8,14 @@ interface PhoneNumberLookupProps {
   onPersonFound: (person: any, type: 'member' | 'donor') => void;
   onNotFound: (phoneNumber: string) => void;
   loading: boolean;
+  eventId: string;
 }
 
-export function PhoneNumberLookup({ onPersonFound, onNotFound, loading }: PhoneNumberLookupProps) {
+export function PhoneNumberLookup({ onPersonFound, onNotFound, loading, eventId }: PhoneNumberLookupProps) {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [searching, setSearching] = useState(false);
+  const [smsSent, setSmsSent] = useState(false);
+  const [sendingSms, setSendingSms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
@@ -33,6 +36,44 @@ export function PhoneNumberLookup({ onPersonFound, onNotFound, loading }: PhoneN
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setPhoneNumber(formatted);
+  };
+
+  const sendCheckInSMS = async (phone: string) => {
+    setSendingSms(true);
+    setError(null);
+
+    try {
+      // Extract just the numbers for the API
+      const cleanPhone = phone.replace(/\D/g, '');
+
+      // Build the check-in URL with phone pre-filled
+      const checkinUrl = `${window.location.origin}/events/${eventId}/checkin?phone=${encodeURIComponent(cleanPhone)}`;
+
+      // Call your CRM API to send SMS
+      // This endpoint should be implemented in your CRM system
+      const response = await fetch('/api/crm/send-checkin-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          eventId: eventId,
+          checkinUrl: checkinUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send SMS');
+      }
+
+      setSmsSent(true);
+    } catch (err: any) {
+      console.error('SMS send error:', err);
+      setError('Unable to send SMS. Please continue with in-person registration.');
+    } finally {
+      setSendingSms(false);
+    }
   };
 
   const handleLookup = async (e: React.FormEvent) => {
@@ -74,15 +115,58 @@ export function PhoneNumberLookup({ onPersonFound, onNotFound, loading }: PhoneN
         return;
       }
 
-      // Not found - trigger guest registration
-      onNotFound(phoneNumber);
+      // Not found - send SMS with check-in link
+      setSearching(false);
+      await sendCheckInSMS(phoneNumber);
     } catch (err: any) {
       console.error('Lookup error:', err);
       setError('An error occurred. Please try again.');
-    } finally {
       setSearching(false);
     }
   };
+
+  // Show SMS sent message
+  if (smsSent) {
+    return (
+      <div className="text-center">
+        <div className="mb-6 p-6 bg-blue-50 border-2 border-blue-200 rounded-xl">
+          <div className="text-5xl mb-4">📱</div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Check Your Phone!
+          </h3>
+          <p className="text-gray-700 mb-1">
+            We've sent you a text message with a link to complete your check-in.
+          </p>
+          <p className="text-sm text-gray-600">
+            Check your messages at <strong>{phoneNumber}</strong>
+          </p>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 mb-3">
+            Don't have your phone handy?
+          </p>
+          <button
+            onClick={() => onNotFound(phoneNumber)}
+            className="text-primary font-semibold hover:underline"
+          >
+            Continue with in-person registration →
+          </button>
+        </div>
+
+        <button
+          onClick={() => {
+            setSmsSent(false);
+            setPhoneNumber('');
+            setError(null);
+          }}
+          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          Try a different phone number
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -98,7 +182,7 @@ export function PhoneNumberLookup({ onPersonFound, onNotFound, loading }: PhoneN
             onChange={handlePhoneChange}
             maxLength={14}
             className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-            disabled={loading || searching}
+            disabled={loading || searching || sendingSms}
             autoFocus
           />
         </div>
@@ -111,10 +195,10 @@ export function PhoneNumberLookup({ onPersonFound, onNotFound, loading }: PhoneN
 
         <button
           type="submit"
-          disabled={loading || searching || phoneNumber.replace(/\D/g, '').length !== 10}
+          disabled={loading || searching || sendingSms || phoneNumber.replace(/\D/g, '').length !== 10}
           className="check-in-button w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {searching ? 'Looking up...' : 'Continue'}
+          {searching ? 'Looking up...' : sendingSms ? 'Sending SMS...' : 'Continue'}
         </button>
       </form>
 
