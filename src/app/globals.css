@@ -101,8 +101,8 @@
   }
 
   .check-in-button {
-    @apply bg-gradient-to-br from-primary to-primary-dark text-white font-bold rounded-xl
-           shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1;
+    @apply text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1;
+    background: linear-gradient(to bottom right, var(--primary), var(--primary-dark));
   }
 
   .member-result-card {
