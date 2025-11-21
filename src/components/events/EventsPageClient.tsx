@@ -7,15 +7,18 @@ import { Calendar, List } from 'lucide-react';
 import type { EventWithRSVP } from '@/types/database.types';
 
 interface EventsPageClientProps {
-  events: EventWithRSVP[];
+  upcomingEvents: EventWithRSVP[];
+  allEvents: EventWithRSVP[];
 }
 
-export function EventsPageClient({ events }: EventsPageClientProps) {
+export function EventsPageClient({ upcomingEvents, allEvents }: EventsPageClientProps) {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   // Debug output
-  console.log('EventsPageClient received events:', events.length);
-  console.log('Events data:', events);
+  console.log('EventsPageClient received upcoming events:', upcomingEvents.length);
+  console.log('EventsPageClient received all events:', allEvents.length);
+  console.log('Upcoming events data:', upcomingEvents);
+  console.log('All events data:', allEvents);
 
   return (
     <div className="py-12">
@@ -23,11 +26,12 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
         {/* Debug Info */}
         <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-4 mb-6">
           <h3 className="font-bold text-yellow-900 mb-2">DEBUG INFO:</h3>
-          <p className="text-yellow-900">Events received: {events.length}</p>
+          <p className="text-yellow-900">Upcoming events (list view): {upcomingEvents.length}</p>
+          <p className="text-yellow-900">All events (calendar view): {allEvents.length}</p>
           <p className="text-yellow-900 text-xs mt-2">
-            {events.length > 0
-              ? `First event: ${events[0].title} - ${events[0].event_date}`
-              : 'No events found'}
+            {upcomingEvents.length > 0
+              ? `First upcoming event: ${upcomingEvents[0].title} - ${upcomingEvents[0].event_date}`
+              : 'No upcoming events found'}
           </p>
         </div>
 
@@ -71,10 +75,10 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
 
         {/* Content */}
         {viewMode === 'calendar' ? (
-          <EventCalendar events={events} />
-        ) : events && events.length > 0 ? (
+          <EventCalendar events={allEvents} />
+        ) : upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {events.map((event) => (
+            {upcomingEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
