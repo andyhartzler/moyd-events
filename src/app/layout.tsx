@@ -21,29 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.className} style={{ backgroundColor: '#273351' }}>
-        {/* Initialize MapKit callback before script loads */}
-        <Script
-          id="mapkit-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.initMapKit = function() {
-                console.log('[MapKit] initMapKit callback triggered by MapKit');
-              };
-            `
-          }}
-        />
-
-        {/* MapKit JS */}
+        {/* MapKit JS - Load with libraries */}
         <Script
           src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js?callback=initMapKit&libraries=map,annotations,services"
           strategy="afterInteractive"
-          onLoad={() => {
-            console.log('[MapKit] Script loaded, mapkit available:', !!window.mapkit);
-          }}
-          onError={(e) => {
-            console.error('[MapKit] Script load error:', e);
-          }}
         />
         {/* Background */}
         <div
