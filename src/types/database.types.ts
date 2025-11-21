@@ -54,7 +54,6 @@ export interface Member {
 
 export interface EventWithAttendees extends Event {
   user_attendee?: EventAttendee;
-  attendee_count?: number;
 }
 
 // Legacy type alias for backward compatibility
