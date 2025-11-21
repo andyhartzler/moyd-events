@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { EventCard } from '@/components/events/EventCard';
 import { EventCalendar } from '@/components/calendar/EventCalendar';
+import { MobileEventCalendar } from '@/components/calendar/MobileEventCalendar';
 import { Calendar, List } from 'lucide-react';
 import type { EventWithRSVP } from '@/types/database.types';
 
@@ -57,7 +58,16 @@ export function EventsPageClient({ upcomingEvents, allEvents }: EventsPageClient
 
         {/* Content */}
         {viewMode === 'calendar' ? (
-          <EventCalendar events={allEvents} />
+          <>
+            {/* Desktop Calendar */}
+            <div className="hidden md:block">
+              <EventCalendar events={allEvents} />
+            </div>
+            {/* Mobile Calendar */}
+            <div className="md:hidden">
+              <MobileEventCalendar events={allEvents} />
+            </div>
+          </>
         ) : upcomingEvents && upcomingEvents.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {upcomingEvents.map((event) => (
