@@ -128,7 +128,7 @@ export default async function EventDetailPage({
 
             {/* About This Event - Second on mobile, Left column on desktop */}
             {event.description && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-1 lg:row-start-2">
+              <div className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-1 ${event.rsvp_enabled ? 'lg:row-start-2' : 'lg:row-start-1'}`}>
                 <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
                   <Info className="w-6 h-6 mr-3" />
                   About This Event
@@ -141,14 +141,13 @@ export default async function EventDetailPage({
               </div>
             )}
 
-            {/* Share Button - Third on mobile, Left column on desktop */}
-            <div className="lg:col-start-1 lg:row-start-3">
-              <ShareButton title={event.title} asCard={true} />
-            </div>
-
-            {/* Location Map - Last on mobile, Right column (all rows) on desktop */}
+            {/* Location Map - Third on mobile, Right column (all rows) on desktop */}
             {event.location && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-2 lg:row-start-1 lg:row-span-3">
+              <div className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-2 lg:row-start-1 ${
+                event.rsvp_enabled && event.description ? 'lg:row-span-3' :
+                event.rsvp_enabled || event.description ? 'lg:row-span-2' :
+                'lg:row-span-1'
+              }`}>
                 <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
                   <MapPin className="w-6 h-6 mr-3" />
                   Location
@@ -175,6 +174,15 @@ export default async function EventDetailPage({
                 />
               </div>
             )}
+
+            {/* Share Button - Last on mobile, Left column on desktop */}
+            <div className={`lg:col-start-1 ${
+              event.rsvp_enabled && event.description ? 'lg:row-start-3' :
+              event.rsvp_enabled || event.description ? 'lg:row-start-2' :
+              'lg:row-start-1'
+            }`}>
+              <ShareButton title={event.title} asCard={true} />
+            </div>
           </div>
         </div>
       </div>
