@@ -109,45 +109,45 @@ export default async function EventDetailPage({
           </div>
 
           {/* Two Column Layout: Info Tiles on Left, Map on Right (Mobile: Stacked) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-x-6 lg:gap-y-3 lg:items-start">
-            {/* RSVP Button - First on mobile, Top left on desktop */}
-            {event.rsvp_enabled && (
-              <div className="lg:col-start-1 lg:row-start-1">
-                <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:items-start">
+            {/* Left Column - Stacked tiles */}
+            <div className="flex flex-col gap-4 lg:col-start-1">
+              {/* RSVP Button - First on mobile, Top left on desktop */}
+              {event.rsvp_enabled && (
+                <div>
                   <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} eventDate={event.event_date} />
                   {hasRSVPd && (
-                    <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg">
+                    <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg mt-4">
                       <p className="text-sm text-green-200 font-medium text-center">
                         ✓ You're registered for this event!
                       </p>
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* About This Event - Second on mobile, Left column on desktop */}
-            {event.description && (
-              <div className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-1 ${event.rsvp_enabled ? 'lg:row-start-2' : 'lg:row-start-1'}`}>
-                <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                  <Info className="w-6 h-6 mr-3" />
-                  About This Event
-                </h2>
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {event.description}
-                  </p>
+              {/* About This Event - Second on mobile and desktop */}
+              {event.description && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
+                    <Info className="w-6 h-6 mr-3" />
+                    About This Event
+                  </h2>
+                  <div className="prose prose-lg max-w-none">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {event.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Location Map - Third on mobile, Right column (all rows) on desktop */}
+              {/* Share Button - Last on mobile and desktop */}
+              <ShareButton title={event.title} asCard={true} />
+            </div>
+
+            {/* Location Map - After left column on mobile, Right column on desktop */}
             {event.location && (
-              <div className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-2 lg:row-start-1 ${
-                event.rsvp_enabled && event.description ? 'lg:row-span-3' :
-                event.rsvp_enabled || event.description ? 'lg:row-span-2' :
-                'lg:row-span-1'
-              }`}>
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-2 lg:row-start-1">
                 <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
                   <MapPin className="w-6 h-6 mr-3" />
                   Location
@@ -174,15 +174,6 @@ export default async function EventDetailPage({
                 />
               </div>
             )}
-
-            {/* Share Button - Last on mobile, Left column on desktop */}
-            <div className={`lg:col-start-1 ${
-              event.rsvp_enabled && event.description ? 'lg:row-start-3' :
-              event.rsvp_enabled || event.description ? 'lg:row-start-2' :
-              'lg:row-start-1'
-            }`}>
-              <ShareButton title={event.title} asCard={true} />
-            </div>
           </div>
         </div>
       </div>
