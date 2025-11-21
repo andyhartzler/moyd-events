@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getMapKitToken } from '@/lib/utils/mapkit';
 
 interface EventMapProps {
@@ -12,25 +12,50 @@ interface EventMapProps {
 export function EventMap({ location, locationAddress, eventTitle }: EventMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Wait for MapKit to load
-    const initMap = () => {
-      if (!mapRef.current || !window.mapkit) return;
+    let isMounted = true;
+
+    const initMap = async () => {
+      if (!mapRef.current || !window.mapkit) {
+        setIsLoading(false);
+        setError('MapKit not available');
+        return;
+      }
 
       try {
         const token = getMapKitToken();
         if (!token) {
           console.error('No MapKit token available for this domain');
+          setError('No MapKit token available');
+          setIsLoading(false);
           return;
         }
 
-        // Initialize MapKit
-        window.mapkit.init({
-          authorizationCallback: (done: any) => {
-            done(token);
-          }
-        });
+        // Initialize MapKit if not already initialized
+        if (!window.mapkit.loadedLibraries || window.mapkit.loadedLibraries.length === 0) {
+          window.mapkit.init({
+            authorizationCallback: (done: any) => {
+              done(token);
+            }
+          });
+
+          // Wait for libraries to load
+          await new Promise<void>((resolve) => {
+            const checkLibraries = () => {
+              if (window.mapkit.loadedLibraries && window.mapkit.loadedLibraries.length > 0) {
+                resolve();
+              } else {
+                setTimeout(checkLibraries, 100);
+              }
+            };
+            checkLibraries();
+          });
+        }
+
+        if (!isMounted) return;
 
         // Geocode the address
         const geocoder = new window.mapkit.Geocoder({
@@ -39,14 +64,20 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
         const addressToGeocode = locationAddress || location;
 
-        geocoder.lookup(addressToGeocode, (error: any, data: any) => {
-          if (error) {
-            console.error('Geocoding error:', error);
+        geocoder.lookup(addressToGeocode, (geocodeError: any, data: any) => {
+          if (!isMounted) return;
+
+          if (geocodeError) {
+            console.error('Geocoding error:', geocodeError);
+            setError('Unable to find location');
+            setIsLoading(false);
             return;
           }
 
           if (data.results.length === 0) {
             console.error('No results found for address');
+            setError('Location not found');
+            setIsLoading(false);
             return;
           }
 
@@ -75,34 +106,59 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
           map.addAnnotation(annotation);
           mapInstanceRef.current = map;
+          setIsLoading(false);
         });
 
       } catch (err) {
         console.error('MapKit initialization error:', err);
+        setError('Failed to load map');
+        setIsLoading(false);
       }
     };
 
-    // Check if MapKit is already loaded
-    if (window.mapkit && window.mapkit.loadedLibraries) {
+    // Set up initialization
+    if (window.mapkit) {
       initMap();
     } else {
-      // Wait for MapKit to load
-      window.initMapKit = initMap;
+      // Wait for MapKit script to load
+      window.initMapKit = () => {
+        initMap();
+      };
     }
 
     return () => {
+      isMounted = false;
       // Cleanup
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.destroy();
+        try {
+          mapInstanceRef.current.destroy();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
       }
     };
   }, [location, locationAddress, eventTitle]);
 
+  if (error) {
+    return (
+      <div className="w-full h-[400px] rounded-xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-600">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div
-      ref={mapRef}
-      className="w-full h-[400px] rounded-xl overflow-hidden shadow-lg"
-      style={{ minHeight: '400px' }}
-    />
+    <div className="relative w-full h-[400px]">
+      {isLoading && (
+        <div className="absolute inset-0 rounded-xl bg-gray-100 flex items-center justify-center z-10">
+          <div className="text-gray-600">Loading map...</div>
+        </div>
+      )}
+      <div
+        ref={mapRef}
+        className="w-full h-full rounded-xl overflow-hidden shadow-lg"
+        style={{ minHeight: '400px' }}
+      />
+    </div>
   );
 }
