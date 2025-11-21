@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Info } from 'lucide-react';
+import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
+import { ShareButton } from '@/components/events/ShareButton';
 import { formatEventDate } from '@/lib/utils/formatters';
+import { parseEventSlug } from '@/lib/utils/slugify';
 
 export default async function EventDetailPage({
   params,
@@ -12,11 +14,34 @@ export default async function EventDetailPage({
 }) {
   const supabase = createClient();
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', params.id)
-    .single();
+  // Try to parse as slug first, fallback to UUID
+  const slugData = parseEventSlug(params.id);
+
+  let event;
+
+  if (slugData) {
+    // Query by title pattern and date range
+    const { data: events } = await supabase
+      .from('events')
+      .select('*')
+      .gte('event_date', slugData.dateStart)
+      .lte('event_date', slugData.dateEnd)
+      .ilike('title', `%${slugData.titlePattern}%`)
+      .eq('status', 'published')
+      .limit(1)
+      .single();
+
+    event = events;
+  } else {
+    // Fallback to UUID lookup for backward compatibility
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', params.id)
+      .single();
+
+    event = data;
+  }
 
   if (!event) notFound();
 
@@ -48,7 +73,7 @@ export default async function EventDetailPage({
       <div className="container-custom mb-6">
         <Link
           href="/"
-          className="inline-flex items-center text-[#273351] hover:opacity-70 font-medium transition-opacity"
+          className="inline-flex items-center text-white hover:opacity-70 font-medium transition-opacity"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Events
@@ -61,147 +86,116 @@ export default async function EventDetailPage({
           {/* Event Header */}
           <div className="mb-8">
             {event.event_type && (
-              <span className="inline-block bg-[#273351] text-white px-4 py-1 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">
+              <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-4 py-1 rounded-full text-sm font-semibold uppercase tracking-wide mb-4">
                 {event.event_type}
               </span>
             )}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#273351] mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
               {event.title}
             </h1>
-            <div className="flex flex-wrap gap-6 text-gray-700 text-lg">
+            <div className="flex flex-wrap gap-6 text-white text-lg">
               <div className="flex items-center">
-                <Calendar className="w-6 h-6 mr-2 text-[#273351]" />
+                <Calendar className="w-6 h-6 mr-2 text-white" />
                 <span>{formatEventDate(event.event_date)}</span>
               </div>
               {event.location && (
                 <div className="flex items-center">
-                  <MapPin className="w-6 h-6 mr-2 text-[#273351]" />
+                  <MapPin className="w-6 h-6 mr-2 text-white" />
                   <span>{event.location}</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Column - dynamically spans based on content */}
-            <div className={`space-y-8 ${event.rsvp_enabled ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
-              {/* Description */}
-              {event.description && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
-                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                    <Info className="w-6 h-6 mr-3" />
-                    About This Event
-                  </h2>
-                  <div className="prose prose-lg max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {event.description}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Location Details */}
-              {event.location && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
-                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                    <MapPin className="w-6 h-6 mr-3" />
-                    Location
-                  </h2>
-                  <div className="space-y-2">
-                    <p className="text-lg font-semibold text-gray-900">{event.location}</p>
-                    {event.location_address && (
-                      <p className="text-gray-600">{event.location_address}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar - only show if RSVP is enabled */}
-            {event.rsvp_enabled && (
-              <div className="lg:col-span-1">
-                <div className="sticky top-24 space-y-6">
-                  {/* RSVP Card */}
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-[#273351]/20">
-                    <h3 className="text-xl font-bold text-[#273351] mb-4">RSVP for Event</h3>
-
-                    {/* Attendance Stats */}
-                    <div className="space-y-4 mb-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Users className="w-5 h-5 text-[#273351]" />
-                          <span className="font-semibold text-gray-700">Attending</span>
-                        </div>
-                        <span className="text-2xl font-bold text-[#273351]">{count || 0}</span>
-                      </div>
-
-                      {event.max_attendees && (
-                        <>
-                          <div className="text-sm text-gray-600">
-                            {event.max_attendees - (count || 0)} spots remaining
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-[#273351] h-2 rounded-full transition-all duration-300"
-                              style={{ width: `${attendancePercentage}%` }}
-                            ></div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
-
-                    {hasRSVPd && (
-                      <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-green-800 font-medium">
-                          ✓ You're registered for this event!
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                {/* Event Details Card */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-6">
-                  <h3 className="text-lg font-bold text-[#273351] mb-4">Event Details</h3>
-                  <div className="space-y-4 text-sm">
-                    <div className="flex items-start space-x-3">
-                      <Calendar className="w-5 h-5 text-[#273351] mt-0.5" />
-                      <div>
-                        <div className="font-semibold text-gray-700">Date & Time</div>
-                        <div className="text-gray-600">{formatEventDate(event.event_date)}</div>
-                      </div>
-                    </div>
-
-                    {event.rsvp_deadline && (
-                      <div className="flex items-start space-x-3">
-                        <Clock className="w-5 h-5 text-[#273351] mt-0.5" />
-                        <div>
-                          <div className="font-semibold text-gray-700">RSVP Deadline</div>
-                          <div className="text-gray-600">
-                            {formatEventDate(event.rsvp_deadline)}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Share Card */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center shadow-soft">
-                  <Share2 className="w-8 h-8 text-[#273351] mx-auto mb-3" />
-                  <h3 className="font-bold text-[#273351] mb-2">Share This Event</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Help spread the word about this event
+          {/* Description and Location Row */}
+          <div className="space-y-8 mb-8">
+            {/* Description */}
+            {event.description && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
+                  <Info className="w-6 h-6 mr-3" />
+                  About This Event
+                </h2>
+                <div className="prose prose-lg max-w-none">
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {event.description}
                   </p>
-                  <button className="text-[#273351] hover:opacity-70 font-semibold text-sm transition-opacity">
-                    Share on Social Media
-                  </button>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Location Details */}
+            {event.location && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
+                  <MapPin className="w-6 h-6 mr-3" />
+                  Location
+                </h2>
+                <div className="space-y-2">
+                  <p className="text-lg font-semibold text-gray-900">{event.location}</p>
+                  {event.location_address && (
+                    <p className="text-gray-600">{event.location_address}</p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
+
+          {/* Action Cards Row - Horizontal on Desktop, Vertical on Mobile */}
+          {event.rsvp_enabled && (
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* RSVP Card */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-[#273351]/20">
+                <h3 className="text-xl font-bold text-[#273351] mb-4">RSVP for Event</h3>
+
+                <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
+
+                {hasRSVPd && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800 font-medium">
+                      ✓ You're registered for this event!
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Event Details Card */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-6">
+                <h3 className="text-lg font-bold text-[#273351] mb-4">Event Details</h3>
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-start space-x-3">
+                    <Calendar className="w-5 h-5 text-[#273351] mt-0.5" />
+                    <div>
+                      <div className="font-semibold text-gray-700">Date & Time</div>
+                      <div className="text-gray-600">{formatEventDate(event.event_date)}</div>
+                    </div>
+                  </div>
+
+                  {event.rsvp_deadline && (
+                    <div className="flex items-start space-x-3">
+                      <Clock className="w-5 h-5 text-[#273351] mt-0.5" />
+                      <div>
+                        <div className="font-semibold text-gray-700">RSVP Deadline</div>
+                        <div className="text-gray-600">
+                          {formatEventDate(event.rsvp_deadline)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Share Card */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center shadow-soft">
+                <Share2 className="w-8 h-8 text-[#273351] mx-auto mb-3" />
+                <h3 className="font-bold text-[#273351] mb-2">Share This Event</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Help spread the word about this event
+                </p>
+                <ShareButton title={event.title} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
