@@ -49,37 +49,22 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
         }
 
         // Initialize MapKit if not already initialized
-        if (!window.mapkit.loadedLibraries || window.mapkit.loadedLibraries.length === 0) {
-          console.log('[EventMap] Initializing MapKit...');
+        console.log('[EventMap] Initializing MapKit...');
 
-          window.mapkit.init({
-            authorizationCallback: (done: any) => {
-              console.log('[EventMap] Authorization callback called');
-              done(token);
-            }
-          });
+        window.mapkit.init({
+          authorizationCallback: (done: any) => {
+            console.log('[EventMap] Authorization callback called');
+            done(token);
+          }
+        });
 
-          // Wait for libraries to load with timeout
-          const libraryLoadTimeout = new Promise<void>((_, reject) => {
-            setTimeout(() => reject(new Error('Library loading timeout')), 10000);
-          });
-
-          const libraryLoadCheck = new Promise<void>((resolve) => {
-            const checkLibraries = () => {
-              if (window.mapkit.loadedLibraries && window.mapkit.loadedLibraries.length > 0) {
-                console.log('[EventMap] Libraries loaded:', window.mapkit.loadedLibraries);
-                resolve();
-              } else {
-                setTimeout(checkLibraries, 100);
-              }
-            };
-            checkLibraries();
-          });
-
-          await Promise.race([libraryLoadCheck, libraryLoadTimeout]);
-        } else {
-          console.log('[EventMap] MapKit already initialized with libraries:', window.mapkit.loadedLibraries);
-        }
+        // Import required libraries
+        console.log('[EventMap] Importing libraries...');
+        await Promise.all([
+          window.mapkit.importLibrary('map'),
+          window.mapkit.importLibrary('services')
+        ]);
+        console.log('[EventMap] Libraries imported successfully');
 
         if (!isMounted) return;
 
