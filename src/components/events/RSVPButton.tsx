@@ -22,8 +22,8 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP }: RSVPButtonProps) 
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      // Redirect to login
-      router.push(`/login?redirect=/events/${eventId}`);
+      // Redirect to public registration page
+      router.push(`/events/${eventId}/register`);
       return;
     }
 

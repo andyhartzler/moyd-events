@@ -57,7 +57,7 @@ export default async function EventDetailPage({
 
       {/* Main Content */}
       <div className="container-custom py-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Event Header */}
           <div className="mb-8">
             {event.event_type && (
@@ -65,17 +65,17 @@ export default async function EventDetailPage({
                 {event.event_type}
               </span>
             )}
-            <h1 className="text-4xl md:text-5xl font-bold text-[#273351] mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#273351] mb-4">
               {event.title}
             </h1>
-            <div className="flex flex-wrap gap-6 text-gray-700">
+            <div className="flex flex-wrap gap-6 text-gray-700 text-lg">
               <div className="flex items-center">
-                <Calendar className="w-5 h-5 mr-2 text-[#273351]" />
+                <Calendar className="w-6 h-6 mr-2 text-[#273351]" />
                 <span>{formatEventDate(event.event_date)}</span>
               </div>
               {event.location && (
                 <div className="flex items-center">
-                  <MapPin className="w-5 h-5 mr-2 text-[#273351]" />
+                  <MapPin className="w-6 h-6 mr-2 text-[#273351]" />
                   <span>{event.location}</span>
                 </div>
               )}
@@ -83,8 +83,8 @@ export default async function EventDetailPage({
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Main Column */}
-            <div className="lg:col-span-2 space-y-8">
+            {/* Main Column - dynamically spans based on content */}
+            <div className={`space-y-8 ${event.rsvp_enabled ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
               {/* Description */}
               {event.description && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
@@ -117,11 +117,11 @@ export default async function EventDetailPage({
               )}
             </div>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-24 space-y-6">
-                {/* RSVP Card */}
-                {event.rsvp_enabled && (
+            {/* Sidebar - only show if RSVP is enabled */}
+            {event.rsvp_enabled && (
+              <div className="lg:col-span-1">
+                <div className="sticky top-24 space-y-6">
+                  {/* RSVP Card */}
                   <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-[#273351]/20">
                     <h3 className="text-xl font-bold text-[#273351] mb-4">RSVP for Event</h3>
 
@@ -160,7 +160,6 @@ export default async function EventDetailPage({
                       </div>
                     )}
                   </div>
-                )}
 
                 {/* Event Details Card */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-6">
@@ -201,6 +200,7 @@ export default async function EventDetailPage({
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>
