@@ -38,7 +38,7 @@ export function EventCard({ event }: EventCardProps) {
                   {event.event_type}
                 </span>
               )}
-              {event.user_rsvp && (
+              {event.user_attendee && (
                 <span className="text-xs bg-green-500 text-white px-3 py-1 rounded-full font-semibold flex items-center">
                   <span className="w-2 h-2 bg-white rounded-full mr-1.5"></span>
                   RSVPd
@@ -67,11 +67,11 @@ export function EventCard({ event }: EventCardProps) {
             </div>
           )}
 
-          {event.rsvp_count !== undefined && (
+          {event.attendee_count !== undefined && (
             <div className="flex items-center space-x-3 text-gray-700">
               <Users className="w-5 h-5 text-primary flex-shrink-0" />
               <span className="text-sm font-semibold">
-                {event.rsvp_count} {event.rsvp_count === 1 ? 'person' : 'people'} attending
+                {event.attendee_count} {event.attendee_count === 1 ? 'person' : 'people'} attending
               </span>
             </div>
           )}

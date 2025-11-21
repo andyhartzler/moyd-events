@@ -6,7 +6,7 @@ export default async function EventsPage() {
 
   const { data: events } = await supabase
     .from('events')
-    .select('*, event_rsvps(count)')
+    .select('*, event_attendees(count)')
     .eq('status', 'published')
     .gte('event_date', new Date().toISOString())
     .order('event_date', { ascending: true });

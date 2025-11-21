@@ -21,7 +21,7 @@ export function useEvents(options: UseEventsOptions = {}) {
       try {
         let query = supabase
           .from('events')
-          .select('*, event_rsvps(count)')
+          .select('*, event_attendees(count)')
           .eq('status', 'published');
 
         // Filter by date
@@ -48,18 +48,18 @@ export function useEvents(options: UseEventsOptions = {}) {
 
           if (user) {
             const eventIds = data?.map(e => e.id) || [];
-            const { data: rsvps } = await supabase
-              .from('event_rsvps')
+            const { data: attendees } = await supabase
+              .from('event_attendees')
               .select('*')
               .eq('member_id', user.id)
               .in('event_id', eventIds);
 
-            const eventsWithRSVP = data?.map(event => ({
+            const eventsWithAttendees = data?.map(event => ({
               ...event,
-              user_rsvp: rsvps?.find(r => r.event_id === event.id),
+              user_attendee: attendees?.find(a => a.event_id === event.id),
             })) || [];
 
-            setEvents(eventsWithRSVP);
+            setEvents(eventsWithAttendees);
           } else {
             setEvents(data || []);
           }
