@@ -108,40 +108,25 @@ export default async function EventDetailPage({
             </div>
           </div>
 
-          {/* Description and Location Row */}
-          <div className="space-y-8 mb-8">
-            {/* Description */}
-            {event.description && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
-                <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                  <Info className="w-6 h-6 mr-3" />
-                  About This Event
-                </h2>
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {event.description}
+          {/* RSVP Button */}
+          {event.rsvp_enabled && (
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <div className="w-full max-w-md">
+                <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
+              </div>
+              {hasRSVPd && (
+                <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg max-w-md w-full">
+                  <p className="text-sm text-green-200 font-medium text-center">
+                    ✓ You're registered for this event!
                   </p>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
 
-            {/* RSVP Button - Above Location */}
-            {event.rsvp_enabled && (
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-full max-w-md">
-                  <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
-                </div>
-                {hasRSVPd && (
-                  <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg max-w-md w-full">
-                    <p className="text-sm text-green-200 font-medium text-center">
-                      ✓ You're registered for this event!
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Location Details */}
+          {/* Two Column Layout: Map on Left, About & Share on Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Column - Location Map */}
             {event.location && (
               <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
                 <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
@@ -163,40 +148,30 @@ export default async function EventDetailPage({
                 />
               </div>
             )}
-          </div>
 
-          {/* Info Cards Row - 2 columns */}
-          {event.rsvp_enabled && (
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Date & Time Card */}
-              <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-soft p-6">
-                <div className="space-y-4 text-sm">
-                  <div className="flex items-start space-x-3">
-                    <Calendar className="w-5 h-5 text-white mt-0.5" />
-                    <div>
-                      <div className="font-semibold text-white">Date & Time</div>
-                      <div className="text-white/80">{formatEventDate(event.event_date)}</div>
-                    </div>
+            {/* Right Column - About & Share */}
+            <div className="space-y-6">
+              {/* About This Event */}
+              {event.description && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
+                    <Info className="w-6 h-6 mr-3" />
+                    About This Event
+                  </h2>
+                  <div className="prose prose-lg max-w-none">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {event.description}
+                    </p>
                   </div>
-
-                  {event.rsvp_deadline && (
-                    <div className="flex items-start space-x-3">
-                      <Clock className="w-5 h-5 text-white mt-0.5" />
-                      <div>
-                        <div className="font-semibold text-white">RSVP Deadline</div>
-                        <div className="text-white/80">
-                          {formatEventDate(event.rsvp_deadline)}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
 
-              {/* Share Card - Fully Clickable */}
-              <ShareButton title={event.title} asCard={true} />
+              {/* Share Button */}
+              <div className="max-w-sm">
+                <ShareButton title={event.title} asCard={true} />
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
