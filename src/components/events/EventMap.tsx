@@ -98,9 +98,13 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
           // Create map
           console.log('[EventMap] Creating map...');
+          const coordinateRegion = new window.mapkit.CoordinateRegion(
+            new window.mapkit.Coordinate(coordinate.latitude, coordinate.longitude),
+            new window.mapkit.CoordinateSpan(0.01, 0.01)
+          );
+
           const map = new window.mapkit.Map(mapRef.current, {
-            center: new window.mapkit.Coordinate(coordinate.latitude, coordinate.longitude),
-            zoom: 0.05,
+            region: coordinateRegion,
             showsMapTypeControl: false,
             showsZoomControl: true,
             showsUserLocationControl: false,
