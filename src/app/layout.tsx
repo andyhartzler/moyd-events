@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
 import Image from 'next/image';
+import Script from 'next/script';
 import { MobileMenu } from '@/components/MobileMenu';
 import './globals.css';
 
@@ -20,6 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.className} style={{ backgroundColor: '#273351' }}>
+        {/* MapKit JS */}
+        <Script
+          src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
+          crossOrigin="anonymous"
+          data-callback="initMapKit"
+          data-libraries="map,annotations"
+        />
         {/* Background */}
         <div
           className="fixed inset-0 z-0"
