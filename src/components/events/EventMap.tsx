@@ -81,6 +81,7 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
           if (geocodeError) {
             console.error('[EventMap] Geocoding error:', geocodeError);
             setError('Unable to find location');
+            clearTimeout(timeoutId);
             setIsLoading(false);
             return;
           }
@@ -88,6 +89,7 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
           if (!data || data.results.length === 0) {
             console.error('[EventMap] No results found for address');
             setError('Location not found');
+            clearTimeout(timeoutId);
             setIsLoading(false);
             return;
           }
@@ -125,6 +127,7 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
           map.addAnnotation(annotation);
           mapInstanceRef.current = map;
           console.log('[EventMap] Map initialization complete');
+          clearTimeout(timeoutId); // Clear timeout on success
           setIsLoading(false);
         });
 
