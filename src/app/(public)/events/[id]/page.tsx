@@ -35,12 +35,8 @@ export default async function EventDetailPage({
     hasRSVPd = !!rsvp;
   }
 
-  // Get attendee count
-  const { count } = await supabase
-    .from('event_attendees')
-    .select('*', { count: 'exact', head: true })
-    .eq('event_id', params.id)
-    .eq('rsvp_status', 'attending');
+  // Get attendee count from the event record (updated automatically by trigger)
+  const count = event.attendee_count || 0;
 
   const attendancePercentage = event.max_attendees && count
     ? Math.round((count / event.max_attendees) * 100)

@@ -10,6 +10,7 @@ export interface Event {
   rsvp_enabled: boolean;
   rsvp_deadline: string | null;
   max_attendees: number | null;
+  attendee_count: number | null;
   checkin_enabled: boolean;
   checkin_start_time: string | null;
   checkin_end_time: string | null;
