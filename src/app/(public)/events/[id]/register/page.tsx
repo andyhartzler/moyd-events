@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { PublicRegistrationForm } from '@/components/events/PublicRegistrationForm';
+import { PhoneLookupForm } from '@/components/events/PhoneLookupForm';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
@@ -14,7 +14,6 @@ export default async function PublicRegisterPage({
 }) {
   const supabase = createClient();
 
-  // Fetch event details
   const { data: event } = await supabase
     .from('events')
     .select('*')
@@ -34,7 +33,6 @@ export default async function PublicRegisterPage({
           Back to Event
         </Link>
 
-        {/* Event Header */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 mb-6 shadow-lg">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             {event.title}
@@ -53,18 +51,8 @@ export default async function PublicRegisterPage({
           </div>
         </div>
 
-        {/* Registration Form */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Register for Event
-            </h2>
-            <p className="text-gray-600">
-              Fill out the form below to register for this event. All fields marked with * are required.
-            </p>
-          </div>
-
-          <PublicRegistrationForm
+          <PhoneLookupForm
             eventId={event.id}
             eventName={event.title}
             prefilledPhone={searchParams.phone}
