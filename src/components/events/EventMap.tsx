@@ -159,21 +159,32 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
       }
     }, 15000);
 
-    if (window.mapkit) {
-      console.log('[EventMap] MapKit already available, initializing...');
-      initMap();
-    } else {
-      console.log('[EventMap] Waiting for MapKit to load...');
-      // Wait for MapKit script to load
-      window.initMapKit = () => {
-        console.log('[EventMap] initMapKit callback triggered');
+    // Poll for MapKit availability
+    const pollForMapKit = () => {
+      if (window.mapkit) {
+        console.log('[EventMap] MapKit detected, initializing...');
         initMap();
-      };
-    }
+      } else {
+        console.log('[EventMap] Polling for MapKit...');
+        const pollInterval = setInterval(() => {
+          if (window.mapkit) {
+            console.log('[EventMap] MapKit now available');
+            clearInterval(pollInterval);
+            initMap();
+          }
+        }, 200);
+
+        // Store interval for cleanup
+        return () => clearInterval(pollInterval);
+      }
+    };
+
+    const cleanupPoll = pollForMapKit();
 
     return () => {
       isMounted = false;
       clearTimeout(timeoutId);
+      if (cleanupPoll) cleanupPoll();
       // Cleanup
       if (mapInstanceRef.current) {
         try {
