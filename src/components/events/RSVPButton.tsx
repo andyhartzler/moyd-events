@@ -49,6 +49,7 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP }: RSVPButtonProps) 
         disabled={loading}
         variant={hasRSVPd ? 'outline' : 'default'}
         size="lg"
+        className="w-full text-lg py-6 h-14"
       >
         {loading ? 'Loading...' : hasRSVPd ? 'Cancel RSVP' : 'RSVP Now'}
       </Button>

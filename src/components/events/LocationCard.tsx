@@ -1,6 +1,7 @@
 'use client';
 
 import { MapPin } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 interface LocationCardProps {
   location: string;
@@ -8,6 +9,8 @@ interface LocationCardProps {
 }
 
 export function LocationCard({ location, locationAddress }: LocationCardProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+
   const handleAddressClick = () => {
     const address = locationAddress || location;
     const encodedAddress = encodeURIComponent(address);
@@ -32,10 +35,75 @@ export function LocationCard({ location, locationAddress }: LocationCardProps) {
     window.open(mapsUrl, '_blank');
   };
 
-  // Create Google Maps embed URL for the iframe
-  const address = locationAddress || location;
-  const encodedAddress = encodeURIComponent(address);
-  const embedUrl = `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodedAddress}`;
+  useEffect(() => {
+    // Load MapKit JS script for Apple Maps embed
+    const script = document.createElement('script');
+    script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js';
+    script.crossOrigin = 'anonymous';
+    script.dataset.callback = 'initMapKit';
+    script.dataset.libraries = 'map';
+
+    // TODO: Replace with your MapKit JS token from Apple Developer Portal
+    // Get it from: https://developer.apple.com/documentation/mapkitjs
+    const MAPKIT_TOKEN = process.env.NEXT_PUBLIC_APPLE_MAPKIT_TOKEN || '';
+
+    (window as any).initMapKit = () => {
+      if (!mapRef.current) return;
+
+      try {
+        // Initialize MapKit JS
+        (window as any).mapkit.init({
+          authorizationCallback: (done: any) => {
+            done(MAPKIT_TOKEN);
+          }
+        });
+
+        // Create map
+        const map = new (window as any).mapkit.Map(mapRef.current, {
+          center: new (window as any).mapkit.Coordinate(38.5767, -92.1736), // Missouri center
+          showsUserLocation: false,
+          showsCompass: (window as any).mapkit.FeatureVisibility.Hidden,
+        });
+
+        // Geocode address and add marker
+        const geocoder = new (window as any).mapkit.Geocoder();
+        const address = locationAddress || location;
+
+        geocoder.lookup(address, (error: any, data: any) => {
+          if (!error && data.results.length > 0) {
+            const place = data.results[0];
+            const coordinate = place.coordinate;
+
+            // Center map on location
+            map.setCenterAnimated(coordinate);
+            map.region = new (window as any).mapkit.CoordinateRegion(
+              coordinate,
+              new (window as any).mapkit.CoordinateSpan(0.02, 0.02)
+            );
+
+            // Add marker
+            const annotation = new (window as any).mapkit.MarkerAnnotation(coordinate, {
+              title: location,
+              subtitle: locationAddress,
+              color: '#273351',
+            });
+            map.addAnnotation(annotation);
+          }
+        });
+      } catch (err) {
+        console.error('MapKit JS initialization error:', err);
+      }
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, [location, locationAddress]);
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
@@ -56,18 +124,12 @@ export function LocationCard({ location, locationAddress }: LocationCardProps) {
           )}
         </div>
 
-        {/* Embedded Map */}
-        <div className="w-full h-64 rounded-lg overflow-hidden border border-gray-200">
-          <iframe
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-            src={`https://www.google.com/maps?q=${encodedAddress}&output=embed`}
-          />
-        </div>
+        {/* Embedded Apple Map */}
+        <div
+          ref={mapRef}
+          className="w-full h-64 rounded-lg overflow-hidden border border-gray-200 bg-gray-100"
+          style={{ minHeight: '256px' }}
+        />
       </div>
     </div>
   );
