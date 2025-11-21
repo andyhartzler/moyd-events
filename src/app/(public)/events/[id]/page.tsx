@@ -145,14 +145,14 @@ export default async function EventDetailPage({
           {event.rsvp_enabled && (
             <div className="grid md:grid-cols-3 gap-6">
               {/* RSVP Card */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-[#273351]/20">
-                <h3 className="text-xl font-bold text-[#273351] mb-4">RSVP for Event</h3>
+              <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-white/20">
+                <h3 className="text-xl font-bold text-white mb-4">RSVP for Event</h3>
 
                 <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
 
                 {hasRSVPd && (
-                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800 font-medium">
+                  <div className="mt-4 p-4 bg-green-600/20 border border-green-400/40 rounded-lg">
+                    <p className="text-sm text-green-200 font-medium">
                       ✓ You're registered for this event!
                     </p>
                   </div>
@@ -160,23 +160,23 @@ export default async function EventDetailPage({
               </div>
 
               {/* Event Details Card */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-6">
-                <h3 className="text-lg font-bold text-[#273351] mb-4">Event Details</h3>
+              <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-soft p-6">
+                <h3 className="text-lg font-bold text-white mb-4">Event Details</h3>
                 <div className="space-y-4 text-sm">
                   <div className="flex items-start space-x-3">
-                    <Calendar className="w-5 h-5 text-[#273351] mt-0.5" />
+                    <Calendar className="w-5 h-5 text-white mt-0.5" />
                     <div>
-                      <div className="font-semibold text-gray-700">Date & Time</div>
-                      <div className="text-gray-600">{formatEventDate(event.event_date)}</div>
+                      <div className="font-semibold text-white">Date & Time</div>
+                      <div className="text-white/80">{formatEventDate(event.event_date)}</div>
                     </div>
                   </div>
 
                   {event.rsvp_deadline && (
                     <div className="flex items-start space-x-3">
-                      <Clock className="w-5 h-5 text-[#273351] mt-0.5" />
+                      <Clock className="w-5 h-5 text-white mt-0.5" />
                       <div>
-                        <div className="font-semibold text-gray-700">RSVP Deadline</div>
-                        <div className="text-gray-600">
+                        <div className="font-semibold text-white">RSVP Deadline</div>
+                        <div className="text-white/80">
                           {formatEventDate(event.rsvp_deadline)}
                         </div>
                       </div>
@@ -185,15 +185,8 @@ export default async function EventDetailPage({
                 </div>
               </div>
 
-              {/* Share Card */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center shadow-soft">
-                <Share2 className="w-8 h-8 text-[#273351] mx-auto mb-3" />
-                <h3 className="font-bold text-[#273351] mb-2">Share This Event</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Help spread the word about this event
-                </p>
-                <ShareButton title={event.title} />
-              </div>
+              {/* Share Card - Fully Clickable */}
+              <ShareButton title={event.title} asCard={true} />
             </div>
           )}
         </div>
