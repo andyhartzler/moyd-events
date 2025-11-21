@@ -13,9 +13,24 @@ interface EventsPageClientProps {
 export function EventsPageClient({ events }: EventsPageClientProps) {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
+  // Debug output
+  console.log('EventsPageClient received events:', events.length);
+  console.log('Events data:', events);
+
   return (
     <div className="py-12">
       <div className="container-custom">
+        {/* Debug Info */}
+        <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-4 mb-6">
+          <h3 className="font-bold text-yellow-900 mb-2">DEBUG INFO:</h3>
+          <p className="text-yellow-900">Events received: {events.length}</p>
+          <p className="text-yellow-900 text-xs mt-2">
+            {events.length > 0
+              ? `First event: ${events[0].title} - ${events[0].event_date}`
+              : 'No events found'}
+          </p>
+        </div>
+
         {/* Page Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
