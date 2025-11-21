@@ -21,10 +21,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.className} style={{ backgroundColor: '#273351' }}>
-        {/* MapKit JS */}
+        {/* MapKit JS with libraries */}
         <Script
-          src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
+          id="mapkit-js"
           strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var script = document.createElement('script');
+                script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js';
+                script.crossOrigin = 'anonymous';
+                script.setAttribute('data-libraries', 'map,services');
+                script.async = true;
+                document.head.appendChild(script);
+              })();
+            `
+          }}
         />
         {/* Background */}
         <div
