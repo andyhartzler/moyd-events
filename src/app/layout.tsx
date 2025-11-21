@@ -26,7 +26,7 @@ export default function RootLayout({
           src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
           crossOrigin="anonymous"
           data-callback="initMapKit"
-          data-libraries="map,annotations"
+          data-libraries="map,annotations,services"
         />
         {/* Background */}
         <div
