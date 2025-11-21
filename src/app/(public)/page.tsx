@@ -13,7 +13,11 @@ export default async function EventsPage() {
 
   if (error) {
     console.error('Error fetching events:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
   }
+
+  console.log('Events fetched:', events?.length || 0);
+  console.log('Events data:', JSON.stringify(events, null, 2));
 
   return <EventsPageClient events={events || []} />;
 }
