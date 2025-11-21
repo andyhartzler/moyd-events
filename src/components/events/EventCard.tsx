@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Calendar, MapPin, Users, ArrowRight, Clock } from 'lucide-react';
+import { Calendar, MapPin, ArrowRight, Clock } from 'lucide-react';
 import { formatEventDate, getEventStatus } from '@/lib/utils/formatters';
 import type { EventWithRSVP } from '@/types/database.types';
 
@@ -64,15 +64,6 @@ export function EventCard({ event }: EventCardProps) {
             <div className="flex items-start space-x-3 text-gray-700">
               <MapPin className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
               <span className="text-sm font-medium">{event.location}</span>
-            </div>
-          )}
-
-          {event.attendee_count !== undefined && (
-            <div className="flex items-center space-x-3 text-gray-700">
-              <Users className="w-5 h-5 text-primary flex-shrink-0" />
-              <span className="text-sm font-semibold">
-                {event.attendee_count} {event.attendee_count === 1 ? 'person' : 'people'} attending
-              </span>
             </div>
           )}
 
