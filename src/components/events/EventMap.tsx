@@ -48,23 +48,19 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
           return;
         }
 
-        // Initialize MapKit if not already initialized
-        console.log('[EventMap] Initializing MapKit...');
-
-        window.mapkit.init({
-          authorizationCallback: (done: any) => {
-            console.log('[EventMap] Authorization callback called');
-            done(token);
-          }
-        });
-
-        // Import required libraries
-        console.log('[EventMap] Importing libraries...');
-        await Promise.all([
-          window.mapkit.importLibrary('map'),
-          window.mapkit.importLibrary('services')
-        ]);
-        console.log('[EventMap] Libraries imported successfully');
+        // Initialize MapKit only once
+        if (!window.mapkit._initialized) {
+          console.log('[EventMap] Initializing MapKit...');
+          window.mapkit.init({
+            authorizationCallback: (done: any) => {
+              console.log('[EventMap] Authorization callback called');
+              done(token);
+            }
+          });
+          window.mapkit._initialized = true;
+        } else {
+          console.log('[EventMap] MapKit already initialized');
+        }
 
         if (!isMounted) return;
 

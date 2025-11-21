@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.className} style={{ backgroundColor: '#273351' }}>
-        {/* MapKit JS - Load without callback */}
+        {/* MapKit JS */}
         <Script
           src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
           strategy="afterInteractive"
