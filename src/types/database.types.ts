@@ -23,10 +23,13 @@ export interface Event {
   updated_at: string;
 }
 
-export interface EventRSVP {
+export interface EventAttendee {
   id: string;
   event_id: string;
-  member_id: string;
+  member_id: string | null;
+  guest_name: string | null;
+  guest_email: string | null;
+  guest_phone: string | null;
   rsvp_status: 'attending' | 'maybe' | 'not_attending';
   guest_count: number;
   notes: string | null;
@@ -34,8 +37,12 @@ export interface EventRSVP {
   checked_in_at: string | null;
   checked_in_by: string | null;
   rsvp_at: string;
+  created_at: string;
   updated_at: string;
 }
+
+// Legacy type alias for backward compatibility
+export type EventRSVP = EventAttendee;
 
 export interface Member {
   id: string;
@@ -44,7 +51,10 @@ export interface Member {
   date_joined: string | null;
 }
 
-export interface EventWithRSVP extends Event {
-  user_rsvp?: EventRSVP;
-  rsvp_count?: number;
+export interface EventWithAttendees extends Event {
+  user_attendee?: EventAttendee;
+  attendee_count?: number;
 }
+
+// Legacy type alias for backward compatibility
+export type EventWithRSVP = EventWithAttendees;

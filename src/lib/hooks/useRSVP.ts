@@ -17,7 +17,7 @@ export function useRSVP() {
       if (!user) throw new Error('Please log in to RSVP');
 
       const { error: rsvpError } = await supabase
-        .from('event_rsvps')
+        .from('event_attendees')
         .upsert({
           event_id: eventId,
           member_id: user.id,
@@ -45,7 +45,7 @@ export function useRSVP() {
       if (!user) throw new Error('Not authenticated');
 
       const { error: deleteError } = await supabase
-        .from('event_rsvps')
+        .from('event_attendees')
         .delete()
         .eq('event_id', eventId)
         .eq('member_id', user.id);
