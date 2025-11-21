@@ -8,12 +8,14 @@ import { PublicRegistrationForm } from './PublicRegistrationForm';
 interface PhoneLookupFormProps {
   eventId: string;
   eventName: string;
+  eventType: string | null;
   prefilledPhone?: string;
 }
 
-export function PhoneLookupForm({ eventId, eventName, prefilledPhone }: PhoneLookupFormProps) {
+export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone }: PhoneLookupFormProps) {
   const [step, setStep] = useState<'phone' | 'success' | 'not-found' | 'already-registered'>('phone');
   const [phone, setPhone] = useState(prefilledPhone || '');
+  const [userName, setUserName] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,9 +47,11 @@ export function PhoneLookupForm({ eventId, eventName, prefilledPhone }: PhoneLoo
       // Handle the 3 possible outcomes
       if (data.success && data.found) {
         // Successfully RSVPd
+        setUserName(data.name || '');
         setStep('success');
       } else if (!data.success && data.found) {
         // Already registered
+        setUserName(data.name || '');
         setStep('already-registered');
       } else if (!data.found) {
         // Not found, show form
@@ -70,7 +74,7 @@ export function PhoneLookupForm({ eventId, eventName, prefilledPhone }: PhoneLoo
             Register for Event
           </h2>
           <p className="text-gray-600">
-            Enter your phone number to get started. We'll check if we have your information on file.
+            Enter your phone number to register.
           </p>
         </div>
 
@@ -129,7 +133,7 @@ export function PhoneLookupForm({ eventId, eventName, prefilledPhone }: PhoneLoo
             You're Registered!
           </h3>
           <p className="text-lg text-gray-600 mb-4">
-            Thank you for your RSVP!
+            Thank you{userName ? `, ${userName}` : ''}!
           </p>
           <p className="text-gray-600">
             We've saved your spot for {eventName}. We look forward to seeing you there!
@@ -164,7 +168,7 @@ export function PhoneLookupForm({ eventId, eventName, prefilledPhone }: PhoneLoo
             Already Registered
           </h3>
           <p className="text-lg text-gray-600 mb-4">
-            You've already RSVPd to this event!
+            {userName ? `${userName}, you're` : "You've"} already registered for this event!
           </p>
           <p className="text-gray-600">
             We look forward to seeing you at {eventName}.
@@ -205,6 +209,7 @@ export function PhoneLookupForm({ eventId, eventName, prefilledPhone }: PhoneLoo
         <PublicRegistrationForm
           eventId={eventId}
           eventName={eventName}
+          eventType={eventType}
           prefilledPhone={phone}
         />
       </div>
