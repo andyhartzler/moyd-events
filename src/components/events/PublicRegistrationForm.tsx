@@ -21,6 +21,7 @@ interface FormData {
   city: string;
   state: string;
   zip_code: string;
+  employer: string;
   occupation: string;
 }
 
@@ -34,6 +35,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
     city: '',
     state: 'MO',
     zip_code: '',
+    employer: '',
     occupation: '',
   });
 
@@ -118,6 +120,11 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
       newErrors.zip_code = 'Please enter a valid ZIP code';
     }
 
+    // Employer is required for fundraisers
+    if (isFundraiser && !formData.employer.trim()) {
+      newErrors.employer = 'Employer is required for fundraiser events';
+    }
+
     // Occupation is required for fundraisers
     if (isFundraiser && !formData.occupation.trim()) {
       newErrors.occupation = 'Occupation is required for fundraiser events';
@@ -154,6 +161,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
             phone: formData.phone,
             date_of_birth: formData.date_of_birth,
             address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip_code}`,
+            employer: formData.employer || null,
             industry: formData.occupation || null,
             date_joined: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
             referral_source: eventName,
@@ -192,6 +200,13 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
           guest_name: formData.name, // Always set
           guest_email: formData.email, // Always set
           guest_phone: formData.phone, // Always set
+          date_of_birth: formData.date_of_birth,
+          address: formData.street,
+          city: formData.city,
+          state: formData.state,
+          zip: formData.zip_code,
+          employer: formData.employer || null,
+          occupation: formData.occupation || null,
           rsvp_status: 'attending',
           guest_count: 0,
           checked_in: false,
@@ -454,6 +469,26 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
           />
           {errors.zip_code && <p className="mt-1 text-sm text-red-600">{errors.zip_code}</p>}
         </div>
+      </div>
+
+      {/* Employer */}
+      <div>
+        <label htmlFor="employer" className="block text-sm font-semibold text-gray-700 mb-2">
+          Employer{isFundraiser ? ' *' : ''}
+        </label>
+        <input
+          type="text"
+          id="employer"
+          name="employer"
+          value={formData.employer}
+          onChange={handleChange}
+          className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
+            errors.employer ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+          }`}
+          disabled={loading}
+          placeholder=""
+        />
+        {errors.employer && <p className="mt-1 text-sm text-red-600">{errors.employer}</p>}
       </div>
 
       {/* Occupation - only show for fundraisers */}
