@@ -45,7 +45,7 @@ export default function RootLayout({
             height: 'auto'
           }}>
             {/* Logo */}
-            <Link href="https://moyoungdemocrats.org" className="flex items-center">
+            <Link href="https://moyoungdemocrats.org" className="flex items-center relative z-50">
               <Image
                 src="/text-logo-960png.png"
                 alt="Missouri Young Democrats"
@@ -158,7 +158,7 @@ export default function RootLayout({
         <footer className="relative z-10" style={{ backgroundColor: '#273351' }}>
           <div className="container-custom py-12">
             {/* Social Media Icons */}
-            <div className="flex justify-center items-center space-x-6 mb-8 flex-wrap">
+            <div className="flex justify-center items-center space-x-3 md:space-x-6 mb-8">
               <a href="https://www.instagram.com/moyoungdemocrats/#" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                 <Image src="/icons/icons8-instagram-100.png" alt="Instagram" width={32} height={32} />
               </a>
