@@ -21,7 +21,7 @@ export function useEvents(options: UseEventsOptions = {}) {
       try {
         let query = supabase
           .from('events')
-          .select('*, event_attendees(count)')
+          .select('*')
           .eq('status', 'published');
 
         // Filter by date
