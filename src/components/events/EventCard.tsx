@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Calendar, MapPin, ArrowRight, Clock } from 'lucide-react';
 import { formatEventDate, getEventStatus } from '@/lib/utils/formatters';
+import { generateEventSlug } from '@/lib/utils/slugify';
 import type { EventWithRSVP } from '@/types/database.types';
 
 interface EventCardProps {
@@ -9,6 +10,7 @@ interface EventCardProps {
 
 export function EventCard({ event }: EventCardProps) {
   const status = getEventStatus(event.event_date);
+  const eventSlug = generateEventSlug(event.title, event.event_date);
 
   const getEventTypeColor = (type: string | null) => {
     switch (type) {
@@ -26,7 +28,7 @@ export function EventCard({ event }: EventCardProps) {
   };
 
   return (
-    <Link href={`/events/${event.id}`} className="group">
+    <Link href={`/events/${eventSlug}`} className="group">
       <div className="card-elevated h-full flex flex-col overflow-hidden transform transition-all duration-300 hover:-translate-y-1">
         {/* Header with gradient */}
         <div className="gradient-primary p-6 text-white relative overflow-hidden">

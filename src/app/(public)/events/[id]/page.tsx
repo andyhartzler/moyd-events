@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
 import { ShareButton } from '@/components/events/ShareButton';
 import { formatEventDate } from '@/lib/utils/formatters';
+import { parseEventSlug } from '@/lib/utils/slugify';
 
 export default async function EventDetailPage({
   params,
@@ -13,11 +14,34 @@ export default async function EventDetailPage({
 }) {
   const supabase = createClient();
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', params.id)
-    .single();
+  // Try to parse as slug first, fallback to UUID
+  const slugData = parseEventSlug(params.id);
+
+  let event;
+
+  if (slugData) {
+    // Query by title pattern and date range
+    const { data: events } = await supabase
+      .from('events')
+      .select('*')
+      .gte('event_date', slugData.dateStart)
+      .lte('event_date', slugData.dateEnd)
+      .ilike('title', `%${slugData.titlePattern}%`)
+      .eq('status', 'published')
+      .limit(1)
+      .single();
+
+    event = events;
+  } else {
+    // Fallback to UUID lookup for backward compatibility
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', params.id)
+      .single();
+
+    event = data;
+  }
 
   if (!event) notFound();
 
