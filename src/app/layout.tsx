@@ -181,7 +181,7 @@ export default function RootLayout({
                 <Image src="/icons/icons8-reddit-240.png" alt="Reddit" width={32} height={32} />
               </a>
               <a href="https://www.youtube.com/@MOYoungDemocrats" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                <Image src="/icons/youtube-logo-1028.png" alt="YouTube" width={32} height={32} />
+                <Image src="/icons/icons8-youtube-250.png" alt="YouTube" width={32} height={32} />
               </a>
               <a href="mailto:info@moyoungdemocrats.org" className="hover:opacity-80 transition-opacity">
                 <Image src="/icons/icons8-email-100 copy.png" alt="Email" width={32} height={32} />

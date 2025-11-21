@@ -137,18 +137,6 @@ export default async function EventDetailPage({
           {/* RSVP Button and Action Cards */}
           {event.rsvp_enabled && (
             <div className="space-y-6">
-              {/* RSVP Button */}
-              <div className="flex flex-col items-center gap-4">
-                <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
-                {hasRSVPd && (
-                  <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg">
-                    <p className="text-sm text-green-200 font-medium">
-                      ✓ You're registered for this event!
-                    </p>
-                  </div>
-                )}
-              </div>
-
               {/* Info Cards Row - 2 columns */}
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Date & Time Card */}
@@ -178,6 +166,20 @@ export default async function EventDetailPage({
 
                 {/* Share Card - Fully Clickable */}
                 <ShareButton title={event.title} asCard={true} />
+              </div>
+
+              {/* RSVP Button - Larger and Below Cards */}
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-full max-w-md">
+                  <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
+                </div>
+                {hasRSVPd && (
+                  <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg max-w-md w-full">
+                    <p className="text-sm text-green-200 font-medium text-center">
+                      ✓ You're registered for this event!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}

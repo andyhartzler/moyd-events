@@ -91,7 +91,23 @@ Required environment variables:
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_SITE_URL=https://events.moyoungdemocrats.org
+NEXT_PUBLIC_APPLE_MAPKIT_TOKEN=your-apple-mapkit-js-token
 ```
+
+### Getting Apple MapKit JS Token
+
+The embedded map on event location pages uses Apple Maps via MapKit JS. To set this up:
+
+1. Sign in to your [Apple Developer account](https://developer.apple.com/account/)
+2. Go to **Certificates, Identifiers & Profiles**
+3. Select **Keys** from the sidebar
+4. Click the **+** button to create a new key
+5. Give it a name (e.g., "MapKit JS Key")
+6. Enable **MapKit JS** checkbox
+7. Click **Continue**, then **Register**
+8. Copy the generated token and add it to your `.env.local` file as `NEXT_PUBLIC_APPLE_MAPKIT_TOKEN`
+
+Note: You'll need an Apple Developer account (free or paid) to generate this token.
 
 ## License
 
