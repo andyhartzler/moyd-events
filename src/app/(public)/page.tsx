@@ -18,11 +18,15 @@ export default async function EventsPage() {
   }
 
   // Now get filtered events
+  // Show events that are either:
+  // 1. Starting in the future (event_date >= today), OR
+  // 2. Currently ongoing (event_end_date >= today for multi-day events)
+  const currentDate = new Date().toISOString();
   const { data: events, error } = await supabase
     .from('events')
     .select('*')
     .eq('status', 'published')
-    .gte('event_date', new Date().toISOString())
+    .or(`event_date.gte.${currentDate},event_end_date.gte.${currentDate}`)
     .order('event_date', { ascending: true });
 
   console.log('=== DEBUG: FILTERED EVENTS ===');

@@ -25,10 +25,14 @@ export function useEvents(options: UseEventsOptions = {}) {
           .eq('status', 'published');
 
         // Filter by date
+        const currentDate = new Date().toISOString();
         if (options.status === 'upcoming') {
-          query = query.gte('event_date', new Date().toISOString());
+          // Show events that are starting in the future OR currently ongoing
+          query = query.or(`event_date.gte.${currentDate},event_end_date.gte.${currentDate}`);
         } else if (options.status === 'past') {
-          query = query.lt('event_date', new Date().toISOString());
+          // Show events that have ended (both start and end dates are in the past)
+          query = query.lt('event_date', currentDate)
+            .or(`event_end_date.lt.${currentDate},event_end_date.is.null`);
         }
 
         // Filter by type
