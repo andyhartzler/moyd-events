@@ -55,7 +55,7 @@ export function LocationCard({ location, locationAddress }: LocationCardProps) {
           )}
         </div>
 
-        {/* Embedded Map using OpenStreetMap */}
+        {/* Embedded Map using Apple Maps */}
         <div className="w-full h-64 rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
           <iframe
             width="100%"
@@ -63,7 +63,7 @@ export function LocationCard({ location, locationAddress }: LocationCardProps) {
             style={{ border: 0 }}
             loading="lazy"
             allowFullScreen
-            src={`https://maps.google.com/maps?q=${encodedAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+            src={`https://maps.apple.com/?q=${encodedAddress}&t=m&z=15`}
             title="Event Location Map"
           />
         </div>

@@ -40,9 +40,9 @@ export function MobileMenu() {
               className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.06em'
+                letterSpacing: '-0.07em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -53,9 +53,9 @@ export function MobileMenu() {
               className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.06em'
+                letterSpacing: '-0.07em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -66,9 +66,9 @@ export function MobileMenu() {
               className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.06em'
+                letterSpacing: '-0.07em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -79,9 +79,9 @@ export function MobileMenu() {
               className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.06em'
+                letterSpacing: '-0.07em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -92,9 +92,9 @@ export function MobileMenu() {
               className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.06em'
+                letterSpacing: '-0.07em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -105,9 +105,9 @@ export function MobileMenu() {
               className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.06em'
+                letterSpacing: '-0.07em'
               }}
               onClick={() => setIsOpen(false)}
             >
