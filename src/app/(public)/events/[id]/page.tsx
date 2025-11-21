@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
 import { ShareButton } from '@/components/events/ShareButton';
-import { LocationCard } from '@/components/events/LocationCard';
+import { EventMap } from '@/components/events/EventMap';
 import { formatEventDate } from '@/lib/utils/formatters';
 import { parseEventSlug } from '@/lib/utils/slugify';
 
@@ -143,10 +143,25 @@ export default async function EventDetailPage({
 
             {/* Location Details */}
             {event.location && (
-              <LocationCard
-                location={event.location}
-                locationAddress={event.location_address}
-              />
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
+                  <MapPin className="w-6 h-6 mr-3" />
+                  Location
+                </h2>
+                <div className="space-y-2 mb-6">
+                  <p className="text-lg font-semibold text-gray-900">{event.location}</p>
+                  {event.location_address && (
+                    <p className="text-gray-600">{event.location_address}</p>
+                  )}
+                </div>
+
+                {/* Apple Maps Integration */}
+                <EventMap
+                  location={event.location}
+                  locationAddress={event.location_address}
+                  eventTitle={event.title}
+                />
+              </div>
             )}
           </div>
 
