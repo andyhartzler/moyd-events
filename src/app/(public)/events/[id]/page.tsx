@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
 import { ShareButton } from '@/components/events/ShareButton';
+import { LocationCard } from '@/components/events/LocationCard';
 import { formatEventDate } from '@/lib/utils/formatters';
 import { parseEventSlug } from '@/lib/utils/slugify';
 
@@ -73,10 +74,10 @@ export default async function EventDetailPage({
       <div className="container-custom mb-6">
         <Link
           href="/"
-          className="inline-flex items-center text-white hover:opacity-70 font-medium transition-opacity"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all"
+          aria-label="Back to Events"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Events
+          <ArrowLeft className="w-5 h-5" />
         </Link>
       </div>
 
@@ -126,32 +127,21 @@ export default async function EventDetailPage({
 
             {/* Location Details */}
             {event.location && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
-                <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                  <MapPin className="w-6 h-6 mr-3" />
-                  Location
-                </h2>
-                <div className="space-y-2">
-                  <p className="text-lg font-semibold text-gray-900">{event.location}</p>
-                  {event.location_address && (
-                    <p className="text-gray-600">{event.location_address}</p>
-                  )}
-                </div>
-              </div>
+              <LocationCard
+                location={event.location}
+                locationAddress={event.location_address}
+              />
             )}
           </div>
 
-          {/* Action Cards Row - Horizontal on Desktop, Vertical on Mobile */}
+          {/* RSVP Button and Action Cards */}
           {event.rsvp_enabled && (
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* RSVP Card */}
-              <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-medium p-6 border-2 border-white/20">
-                <h3 className="text-xl font-bold text-white mb-4">RSVP for Event</h3>
-
+            <div className="space-y-6">
+              {/* RSVP Button */}
+              <div className="flex flex-col items-center gap-4">
                 <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
-
                 {hasRSVPd && (
-                  <div className="mt-4 p-4 bg-green-600/20 border border-green-400/40 rounded-lg">
+                  <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg">
                     <p className="text-sm text-green-200 font-medium">
                       ✓ You're registered for this event!
                     </p>
@@ -159,34 +149,36 @@ export default async function EventDetailPage({
                 )}
               </div>
 
-              {/* Event Details Card */}
-              <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-soft p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Event Details</h3>
-                <div className="space-y-4 text-sm">
-                  <div className="flex items-start space-x-3">
-                    <Calendar className="w-5 h-5 text-white mt-0.5" />
-                    <div>
-                      <div className="font-semibold text-white">Date & Time</div>
-                      <div className="text-white/80">{formatEventDate(event.event_date)}</div>
-                    </div>
-                  </div>
-
-                  {event.rsvp_deadline && (
+              {/* Info Cards Row - 2 columns */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Date & Time Card */}
+                <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-soft p-6">
+                  <div className="space-y-4 text-sm">
                     <div className="flex items-start space-x-3">
-                      <Clock className="w-5 h-5 text-white mt-0.5" />
+                      <Calendar className="w-5 h-5 text-white mt-0.5" />
                       <div>
-                        <div className="font-semibold text-white">RSVP Deadline</div>
-                        <div className="text-white/80">
-                          {formatEventDate(event.rsvp_deadline)}
-                        </div>
+                        <div className="font-semibold text-white">Date & Time</div>
+                        <div className="text-white/80">{formatEventDate(event.event_date)}</div>
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Share Card - Fully Clickable */}
-              <ShareButton title={event.title} asCard={true} />
+                    {event.rsvp_deadline && (
+                      <div className="flex items-start space-x-3">
+                        <Clock className="w-5 h-5 text-white mt-0.5" />
+                        <div>
+                          <div className="font-semibold text-white">RSVP Deadline</div>
+                          <div className="text-white/80">
+                            {formatEventDate(event.rsvp_deadline)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Share Card - Fully Clickable */}
+                <ShareButton title={event.title} asCard={true} />
+              </div>
             </div>
           )}
         </div>
