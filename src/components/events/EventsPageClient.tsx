@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { EventCard } from '@/components/events/EventCard';
 import { EventCalendar } from '@/components/calendar/EventCalendar';
-import { Calendar, List, Plus } from 'lucide-react';
-import Link from 'next/link';
+import { Calendar, List } from 'lucide-react';
 import type { EventWithRSVP } from '@/types/database.types';
 
 interface EventsPageClientProps {
@@ -26,8 +25,8 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
             Join us at our upcoming events and be part of the change you want to see in Missouri.
           </p>
 
-          {/* View Toggle and Add Event Button */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* View Toggle */}
+          <div className="flex items-center justify-center">
             <div className="inline-flex bg-white/20 backdrop-blur-sm rounded-lg p-1">
               <button
                 onClick={() => setViewMode('list')}
@@ -52,14 +51,6 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
                 Calendar View
               </button>
             </div>
-
-            <Link
-              href="/admin/events/new"
-              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors shadow-lg"
-            >
-              <Plus className="w-4 h-4" />
-              Add New Event
-            </Link>
           </div>
         </div>
 
@@ -77,14 +68,7 @@ export function EventsPageClient({ events }: EventsPageClientProps) {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-12 max-w-md mx-auto">
               <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-800 mb-2">No Upcoming Events</h3>
-              <p className="text-gray-600 mb-4">Check back soon for new events and opportunities to get involved!</p>
-              <Link
-                href="/admin/events/new"
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Create First Event
-              </Link>
+              <p className="text-gray-600">Check back soon for new events and opportunities to get involved!</p>
             </div>
           </div>
         )}
