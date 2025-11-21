@@ -48,12 +48,8 @@ export default function RootLayout({
                 src="/text-logo-960png.png"
                 alt="Missouri Young Democrats"
                 width={143}
-                height={48}
-                className="w-auto"
-                style={{
-                  height: '48px',
-                  width: '143px'
-                }}
+                height={68}
+                className="w-auto h-[30px] md:h-[68px]"
                 priority
               />
             </Link>
@@ -65,10 +61,11 @@ export default function RootLayout({
                 className="text-white hover:text-white/80 transition-colors uppercase"
                 style={{
                   fontFamily: 'Montserrat',
+                  fontStyle: 'normal',
                   fontWeight: 800,
                   fontSize: '1.1rem',
-                  lineHeight: '1.3em',
-                  letterSpacing: '-0.06em'
+                  height: '1.8vw',
+                  letterSpacing: '-0.07em'
                 }}
               >
                 OUR TEAM
@@ -78,10 +75,11 @@ export default function RootLayout({
                 className="text-white hover:text-white/80 transition-colors uppercase"
                 style={{
                   fontFamily: 'Montserrat',
+                  fontStyle: 'normal',
                   fontWeight: 800,
                   fontSize: '1.1rem',
-                  lineHeight: '1.3em',
-                  letterSpacing: '-0.06em'
+                  height: '1.8vw',
+                  letterSpacing: '-0.07em'
                 }}
               >
                 CHAPTERS
@@ -91,10 +89,11 @@ export default function RootLayout({
                 className="text-white hover:text-white/80 transition-colors uppercase"
                 style={{
                   fontFamily: 'Montserrat',
+                  fontStyle: 'normal',
                   fontWeight: 800,
                   fontSize: '1.1rem',
-                  lineHeight: '1.3em',
-                  letterSpacing: '-0.06em'
+                  height: '1.8vw',
+                  letterSpacing: '-0.07em'
                 }}
               >
                 ABOUT
@@ -104,10 +103,11 @@ export default function RootLayout({
                 className="text-white hover:text-white/80 transition-colors uppercase"
                 style={{
                   fontFamily: 'Montserrat',
+                  fontStyle: 'normal',
                   fontWeight: 800,
                   fontSize: '1.1rem',
-                  lineHeight: '1.3em',
-                  letterSpacing: '-0.06em'
+                  height: '1.8vw',
+                  letterSpacing: '-0.07em'
                 }}
               >
                 DONATE
@@ -117,10 +117,11 @@ export default function RootLayout({
                 className="text-white hover:text-white/80 transition-colors uppercase"
                 style={{
                   fontFamily: 'Montserrat',
+                  fontStyle: 'normal',
                   fontWeight: 800,
                   fontSize: '1.1rem',
-                  lineHeight: '1.3em',
-                  letterSpacing: '-0.06em'
+                  height: '1.8vw',
+                  letterSpacing: '-0.07em'
                 }}
               >
                 CONTACT
@@ -130,10 +131,11 @@ export default function RootLayout({
                 className="text-white hover:text-white/80 transition-colors uppercase"
                 style={{
                   fontFamily: 'Montserrat',
+                  fontStyle: 'normal',
                   fontWeight: 800,
                   fontSize: '1.1rem',
-                  lineHeight: '1.3em',
-                  letterSpacing: '-0.06em'
+                  height: '1.8vw',
+                  letterSpacing: '-0.07em'
                 }}
               >
                 MEMBERS
