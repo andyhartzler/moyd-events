@@ -125,50 +125,8 @@ export default async function EventDetailPage({
               </div>
             )}
 
-            {/* Location Details */}
-            {event.location && (
-              <LocationCard
-                location={event.location}
-                locationAddress={event.location_address}
-              />
-            )}
-          </div>
-
-          {/* RSVP Button and Action Cards */}
-          {event.rsvp_enabled && (
-            <div className="space-y-6">
-              {/* Info Cards Row - 2 columns */}
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Date & Time Card */}
-                <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-soft p-6">
-                  <div className="space-y-4 text-sm">
-                    <div className="flex items-start space-x-3">
-                      <Calendar className="w-5 h-5 text-white mt-0.5" />
-                      <div>
-                        <div className="font-semibold text-white">Date & Time</div>
-                        <div className="text-white/80">{formatEventDate(event.event_date)}</div>
-                      </div>
-                    </div>
-
-                    {event.rsvp_deadline && (
-                      <div className="flex items-start space-x-3">
-                        <Clock className="w-5 h-5 text-white mt-0.5" />
-                        <div>
-                          <div className="font-semibold text-white">RSVP Deadline</div>
-                          <div className="text-white/80">
-                            {formatEventDate(event.rsvp_deadline)}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Share Card - Fully Clickable */}
-                <ShareButton title={event.title} asCard={true} />
-              </div>
-
-              {/* RSVP Button - Larger and Below Cards */}
+            {/* RSVP Button - Above Location */}
+            {event.rsvp_enabled && (
               <div className="flex flex-col items-center gap-4">
                 <div className="w-full max-w-md">
                   <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
@@ -181,6 +139,47 @@ export default async function EventDetailPage({
                   </div>
                 )}
               </div>
+            )}
+
+            {/* Location Details */}
+            {event.location && (
+              <LocationCard
+                location={event.location}
+                locationAddress={event.location_address}
+              />
+            )}
+          </div>
+
+          {/* Info Cards Row - 2 columns */}
+          {event.rsvp_enabled && (
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Date & Time Card */}
+              <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-soft p-6">
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-start space-x-3">
+                    <Calendar className="w-5 h-5 text-white mt-0.5" />
+                    <div>
+                      <div className="font-semibold text-white">Date & Time</div>
+                      <div className="text-white/80">{formatEventDate(event.event_date)}</div>
+                    </div>
+                  </div>
+
+                  {event.rsvp_deadline && (
+                    <div className="flex items-start space-x-3">
+                      <Clock className="w-5 h-5 text-white mt-0.5" />
+                      <div>
+                        <div className="font-semibold text-white">RSVP Deadline</div>
+                        <div className="text-white/80">
+                          {formatEventDate(event.rsvp_deadline)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Share Card - Fully Clickable */}
+              <ShareButton title={event.title} asCard={true} />
             </div>
           )}
         </div>

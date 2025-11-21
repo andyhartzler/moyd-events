@@ -37,12 +37,12 @@ export function MobileMenu() {
           <nav className="flex flex-col items-center space-y-8">
             <Link
               href="https://moyoungdemocrats.org/our-team"
-              className="text-white hover:text-white/80 transition-colors uppercase tracking-tight"
+              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
+                letterSpacing: '-0.06em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -50,12 +50,12 @@ export function MobileMenu() {
             </Link>
             <Link
               href="https://moyoungdemocrats.org/chapters"
-              className="text-white hover:text-white/80 transition-colors uppercase tracking-tight"
+              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
+                letterSpacing: '-0.06em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -63,12 +63,12 @@ export function MobileMenu() {
             </Link>
             <Link
               href="https://moyoungdemocrats.org/about"
-              className="text-white hover:text-white/80 transition-colors uppercase tracking-tight"
+              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
+                letterSpacing: '-0.06em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -76,12 +76,12 @@ export function MobileMenu() {
             </Link>
             <Link
               href="https://moyoungdemocrats.org/donate"
-              className="text-white hover:text-white/80 transition-colors uppercase tracking-tight"
+              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
+                letterSpacing: '-0.06em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -89,12 +89,12 @@ export function MobileMenu() {
             </Link>
             <Link
               href="https://moyoungdemocrats.org/contact"
-              className="text-white hover:text-white/80 transition-colors uppercase tracking-tight"
+              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
+                letterSpacing: '-0.06em'
               }}
               onClick={() => setIsOpen(false)}
             >
@@ -102,12 +102,12 @@ export function MobileMenu() {
             </Link>
             <Link
               href="https://moyoungdemocrats.org/members"
-              className="text-white hover:text-white/80 transition-colors uppercase tracking-tight"
+              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
               style={{
                 fontFamily: 'Montserrat',
-                fontWeight: 800,
+                fontWeight: 700,
                 fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
+                letterSpacing: '-0.06em'
               }}
               onClick={() => setIsOpen(false)}
             >
