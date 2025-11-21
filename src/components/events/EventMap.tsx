@@ -17,16 +17,30 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const initMap = async () => {
-      if (!mapRef.current || !window.mapkit) {
+      console.log('[EventMap] initMap called');
+
+      if (!mapRef.current) {
+        console.error('[EventMap] mapRef.current is null');
         setIsLoading(false);
-        setError('MapKit not available');
+        setError('Map container not ready');
+        return;
+      }
+
+      if (!window.mapkit) {
+        console.error('[EventMap] window.mapkit not available');
+        setIsLoading(false);
+        setError('MapKit not loaded');
         return;
       }
 
       try {
         const token = getMapKitToken();
+        console.log('[EventMap] Token available:', !!token);
+        console.log('[EventMap] Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
+
         if (!token) {
           console.error('No MapKit token available for this domain');
           setError('No MapKit token available');
@@ -36,16 +50,24 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
         // Initialize MapKit if not already initialized
         if (!window.mapkit.loadedLibraries || window.mapkit.loadedLibraries.length === 0) {
+          console.log('[EventMap] Initializing MapKit...');
+
           window.mapkit.init({
             authorizationCallback: (done: any) => {
+              console.log('[EventMap] Authorization callback called');
               done(token);
             }
           });
 
-          // Wait for libraries to load
-          await new Promise<void>((resolve) => {
+          // Wait for libraries to load with timeout
+          const libraryLoadTimeout = new Promise<void>((_, reject) => {
+            setTimeout(() => reject(new Error('Library loading timeout')), 10000);
+          });
+
+          const libraryLoadCheck = new Promise<void>((resolve) => {
             const checkLibraries = () => {
               if (window.mapkit.loadedLibraries && window.mapkit.loadedLibraries.length > 0) {
+                console.log('[EventMap] Libraries loaded:', window.mapkit.loadedLibraries);
                 resolve();
               } else {
                 setTimeout(checkLibraries, 100);
@@ -53,29 +75,37 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
             };
             checkLibraries();
           });
+
+          await Promise.race([libraryLoadCheck, libraryLoadTimeout]);
+        } else {
+          console.log('[EventMap] MapKit already initialized with libraries:', window.mapkit.loadedLibraries);
         }
 
         if (!isMounted) return;
 
+        console.log('[EventMap] Creating geocoder...');
         // Geocode the address
         const geocoder = new window.mapkit.Geocoder({
           language: 'en-US',
         });
 
         const addressToGeocode = locationAddress || location;
+        console.log('[EventMap] Geocoding address:', addressToGeocode);
 
         geocoder.lookup(addressToGeocode, (geocodeError: any, data: any) => {
+          console.log('[EventMap] Geocode callback received');
+
           if (!isMounted) return;
 
           if (geocodeError) {
-            console.error('Geocoding error:', geocodeError);
+            console.error('[EventMap] Geocoding error:', geocodeError);
             setError('Unable to find location');
             setIsLoading(false);
             return;
           }
 
-          if (data.results.length === 0) {
-            console.error('No results found for address');
+          if (!data || data.results.length === 0) {
+            console.error('[EventMap] No results found for address');
             setError('Location not found');
             setIsLoading(false);
             return;
@@ -83,8 +113,10 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
           const place = data.results[0];
           const coordinate = place.coordinate;
+          console.log('[EventMap] Geocoded to:', coordinate);
 
           // Create map
+          console.log('[EventMap] Creating map...');
           const map = new window.mapkit.Map(mapRef.current, {
             center: new window.mapkit.Coordinate(coordinate.latitude, coordinate.longitude),
             zoom: 0.05,
@@ -94,6 +126,7 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
             showsCompass: window.mapkit.FeatureVisibility.Hidden,
           });
 
+          console.log('[EventMap] Adding marker...');
           // Add marker
           const annotation = new window.mapkit.MarkerAnnotation(
             new window.mapkit.Coordinate(coordinate.latitude, coordinate.longitude),
@@ -106,6 +139,7 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
           map.addAnnotation(annotation);
           mapInstanceRef.current = map;
+          console.log('[EventMap] Map initialization complete');
           setIsLoading(false);
         });
 
@@ -116,18 +150,30 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
       }
     };
 
-    // Set up initialization
+    // Set up initialization with timeout
+    timeoutId = setTimeout(() => {
+      if (isLoading && isMounted) {
+        console.error('[EventMap] Initialization timeout');
+        setError('Map loading timeout');
+        setIsLoading(false);
+      }
+    }, 15000);
+
     if (window.mapkit) {
+      console.log('[EventMap] MapKit already available, initializing...');
       initMap();
     } else {
+      console.log('[EventMap] Waiting for MapKit to load...');
       // Wait for MapKit script to load
       window.initMapKit = () => {
+        console.log('[EventMap] initMapKit callback triggered');
         initMap();
       };
     }
 
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
       // Cleanup
       if (mapInstanceRef.current) {
         try {
