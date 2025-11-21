@@ -109,7 +109,7 @@ export default async function EventDetailPage({
           </div>
 
           {/* Two Column Layout: Info Tiles on Left, Map on Right (Mobile: Stacked) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-x-6 lg:gap-y-3 lg:items-start">
             {/* RSVP Button - First on mobile, Top left on desktop */}
             {event.rsvp_enabled && (
               <div className="lg:col-start-1 lg:row-start-1">
