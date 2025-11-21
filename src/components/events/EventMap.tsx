@@ -111,6 +111,7 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
             showsZoomControl: true,
             showsUserLocationControl: false,
             showsCompass: window.mapkit.FeatureVisibility.Hidden,
+            colorScheme: window.mapkit.Map.ColorSchemes.Dark,
           });
 
           console.log('[EventMap] Adding marker...');

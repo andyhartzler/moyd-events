@@ -9,15 +9,26 @@ import { createClient } from '@/lib/supabase/client';
 interface RSVPButtonProps {
   eventId: string;
   hasRSVPd: boolean;
+  eventDate: string;
 }
 
-export function RSVPButton({ eventId, hasRSVPd: initialRSVP }: RSVPButtonProps) {
+export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPButtonProps) {
   const [hasRSVPd, setHasRSVPd] = useState(initialRSVP);
   const { rsvp, cancelRSVP, loading, error } = useRSVP();
   const router = useRouter();
   const supabase = createClient();
 
   const handleRSVP = async () => {
+    // Check if event is more than 2 hours past
+    const eventDateTime = new Date(eventDate);
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
+    if (eventDateTime < twoHoursAgo) {
+      // Redirect to event-passed page
+      router.push(`/events/${eventId}/event-passed`);
+      return;
+    }
+
     // Check if user is logged in
     const { data: { user } } = await supabase.auth.getUser();
 

@@ -29,16 +29,12 @@ export function ShareButton({ title, url, asCard = false }: { title: string; url
     return (
       <button
         onClick={handleShare}
-        className="bg-[#273351] backdrop-blur-sm rounded-xl p-6 text-center shadow-soft hover:opacity-90 transition-opacity w-full"
+        className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center shadow-soft hover:opacity-90 transition-opacity w-full"
       >
-        <Share2 className="w-8 h-8 text-white mx-auto mb-3" />
-        <h3 className="font-bold text-white mb-2">Share This Event</h3>
-        <p className="text-sm text-white/80 mb-4">
+        <h3 className="font-bold text-[#273351] mb-2">Share This Event</h3>
+        <p className="text-sm text-gray-700">
           Help spread the word about this event
         </p>
-        <span className="text-white hover:text-white/80 font-semibold text-sm transition-opacity">
-          Share Event
-        </span>
       </button>
     );
   }
