@@ -108,11 +108,11 @@ export default async function EventDetailPage({
             </div>
           </div>
 
-          {/* Two Column Layout: Map on Left, Info Tiles on Right (Mobile: Stacked) */}
+          {/* Two Column Layout: Info Tiles on Left, Map on Right (Mobile: Stacked) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 lg:items-start">
-            {/* RSVP Button - First on mobile, Top right on desktop */}
+            {/* RSVP Button - First on mobile, Top left on desktop */}
             {event.rsvp_enabled && (
-              <div className="lg:col-start-2 lg:row-start-1">
+              <div className="lg:col-start-1 lg:row-start-1">
                 <div className="flex flex-col gap-4">
                   <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} />
                   {hasRSVPd && (
@@ -126,9 +126,9 @@ export default async function EventDetailPage({
               </div>
             )}
 
-            {/* About This Event - Second on mobile, Right column on desktop */}
+            {/* About This Event - Second on mobile, Left column on desktop */}
             {event.description && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-2 lg:row-start-2">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-1 lg:row-start-2">
                 <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
                   <Info className="w-6 h-6 mr-3" />
                   About This Event
@@ -141,39 +141,14 @@ export default async function EventDetailPage({
               </div>
             )}
 
-            {/* Date & Time Card - Third on mobile, Right column on desktop */}
-            <div className="bg-[#273351] backdrop-blur-sm rounded-xl shadow-soft p-6 lg:col-start-2 lg:row-start-3">
-              <div className="space-y-4 text-sm">
-                <div className="flex items-start space-x-3">
-                  <Calendar className="w-5 h-5 text-white mt-0.5" />
-                  <div>
-                    <div className="font-semibold text-white">Date & Time</div>
-                    <div className="text-white/80">{formatEventDate(event.event_date)}</div>
-                  </div>
-                </div>
-
-                {event.rsvp_deadline && (
-                  <div className="flex items-start space-x-3">
-                    <Clock className="w-5 h-5 text-white mt-0.5" />
-                    <div>
-                      <div className="font-semibold text-white">RSVP Deadline</div>
-                      <div className="text-white/80">
-                        {formatEventDate(event.rsvp_deadline)}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Share Button - Fourth on mobile, Right column on desktop */}
-            <div className="lg:col-start-2 lg:row-start-4">
+            {/* Share Button - Third on mobile, Left column on desktop */}
+            <div className="lg:col-start-1 lg:row-start-3">
               <ShareButton title={event.title} asCard={true} />
             </div>
 
-            {/* Location Map - Last on mobile, Left column (all rows) on desktop */}
+            {/* Location Map - Last on mobile, Right column (all rows) on desktop */}
             {event.location && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-1 lg:row-start-1 lg:row-span-4">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-2 lg:row-start-1 lg:row-span-3">
                 <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
                   <MapPin className="w-6 h-6 mr-3" />
                   Location
@@ -181,7 +156,14 @@ export default async function EventDetailPage({
                 <div className="space-y-2 mb-6">
                   <p className="text-lg font-semibold text-gray-900">{event.location}</p>
                   {event.location_address && (
-                    <p className="text-gray-600">{event.location_address}</p>
+                    <a
+                      href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 underline hover:text-[#273351] transition-colors"
+                    >
+                      {event.location_address}
+                    </a>
                   )}
                 </div>
 
