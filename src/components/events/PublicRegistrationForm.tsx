@@ -8,6 +8,7 @@ import { CheckCircle } from 'lucide-react';
 interface PublicRegistrationFormProps {
   eventId: string;
   eventName: string;
+  eventType: string | null;
   prefilledPhone?: string;
 }
 
@@ -23,7 +24,7 @@ interface FormData {
   occupation: string;
 }
 
-export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: PublicRegistrationFormProps) {
+export function PublicRegistrationForm({ eventId, eventName, eventType, prefilledPhone }: PublicRegistrationFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -43,6 +44,9 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
 
   const supabase = createClient();
   const router = useRouter();
+
+  // Check if event is a fundraiser
+  const isFundraiser = eventType === 'fundraiser';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -91,22 +95,32 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
       newErrors.date_of_birth = 'Date of birth is required';
     }
 
-    if (!formData.street.trim()) {
-      newErrors.street = 'Street address is required';
+    // Address validation - conditional based on event type
+    if (isFundraiser) {
+      // For fundraisers, require full address
+      if (!formData.street.trim()) {
+        newErrors.street = 'Street address is required';
+      }
+
+      if (!formData.city.trim()) {
+        newErrors.city = 'City is required';
+      }
+
+      if (!formData.state) {
+        newErrors.state = 'State is required';
+      }
     }
 
-    if (!formData.city.trim()) {
-      newErrors.city = 'City is required';
-    }
-
-    if (!formData.state) {
-      newErrors.state = 'State is required';
-    }
-
+    // ZIP code is always required
     if (!formData.zip_code.trim()) {
       newErrors.zip_code = 'ZIP code is required';
     } else if (!/^\d{5}(-\d{4})?$/.test(formData.zip_code)) {
       newErrors.zip_code = 'Please enter a valid ZIP code';
+    }
+
+    // Occupation is required for fundraisers
+    if (isFundraiser && !formData.occupation.trim()) {
+      newErrors.occupation = 'Occupation is required for fundraiser events';
     }
 
     setErrors(newErrors);
@@ -169,14 +183,15 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
       }
 
       // Step 2: ALWAYS create event_attendees record
+      // Always populate guest fields (even when member_id exists)
       const { error: attendeeError } = await supabase
         .from('event_attendees')
         .insert({
           event_id: eventId,
           member_id: memberId, // Will be null for non-members
-          guest_name: memberId ? null : formData.name, // Only set if NOT a member
-          guest_email: memberId ? null : formData.email,
-          guest_phone: memberId ? null : formData.phone,
+          guest_name: formData.name, // Always set
+          guest_email: formData.email, // Always set
+          guest_phone: formData.phone, // Always set
           rsvp_status: 'attending',
           guest_count: 0,
           checked_in: false,
@@ -246,7 +261,7 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
             errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
           disabled={loading}
-          placeholder="John Doe"
+          placeholder=""
         />
         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
       </div>
@@ -266,7 +281,7 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
             errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
           disabled={loading}
-          placeholder="john@example.com"
+          placeholder=""
         />
         {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
       </div>
@@ -286,7 +301,7 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
             errors.phone ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
           disabled={loading}
-          placeholder="(555) 123-4567"
+          placeholder=""
         />
         {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
       </div>
@@ -314,7 +329,7 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
       {/* Street Address */}
       <div>
         <label htmlFor="street" className="block text-sm font-semibold text-gray-700 mb-2">
-          Street Address *
+          Street Address{isFundraiser ? ' *' : ''}
         </label>
         <input
           type="text"
@@ -326,7 +341,7 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
             errors.street ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
           disabled={loading}
-          placeholder="123 Main St"
+          placeholder=""
         />
         {errors.street && <p className="mt-1 text-sm text-red-600">{errors.street}</p>}
       </div>
@@ -335,7 +350,7 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
       <div className="grid grid-cols-6 gap-4">
         <div className="col-span-3">
           <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
-            City *
+            City{isFundraiser ? ' *' : ''}
           </label>
           <input
             type="text"
@@ -347,14 +362,14 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
               errors.city ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
             }`}
             disabled={loading}
-            placeholder="Kansas City"
+            placeholder=""
           />
           {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
         </div>
 
         <div className="col-span-1">
           <label htmlFor="state" className="block text-sm font-semibold text-gray-700 mb-2">
-            State *
+            State{isFundraiser ? ' *' : ''}
           </label>
           <select
             id="state"
@@ -434,29 +449,34 @@ export function PublicRegistrationForm({ eventId, eventName, prefilledPhone }: P
               errors.zip_code ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
             }`}
             disabled={loading}
-            placeholder="64101"
+            placeholder=""
             maxLength={10}
           />
           {errors.zip_code && <p className="mt-1 text-sm text-red-600">{errors.zip_code}</p>}
         </div>
       </div>
 
-      {/* Occupation */}
-      <div>
-        <label htmlFor="occupation" className="block text-sm font-semibold text-gray-700 mb-2">
-          Occupation (Optional)
-        </label>
-        <input
-          type="text"
-          id="occupation"
-          name="occupation"
-          value={formData.occupation}
-          onChange={handleChange}
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-          disabled={loading}
-          placeholder="Software Engineer"
-        />
-      </div>
+      {/* Occupation - only show for fundraisers */}
+      {isFundraiser && (
+        <div>
+          <label htmlFor="occupation" className="block text-sm font-semibold text-gray-700 mb-2">
+            Occupation *
+          </label>
+          <input
+            type="text"
+            id="occupation"
+            name="occupation"
+            value={formData.occupation}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
+              errors.occupation ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+            }`}
+            disabled={loading}
+            placeholder=""
+          />
+          {errors.occupation && <p className="mt-1 text-sm text-red-600">{errors.occupation}</p>}
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (

@@ -55,6 +55,7 @@ export default async function PublicRegisterPage({
           <PhoneLookupForm
             eventId={event.id}
             eventName={event.title}
+            eventType={event.event_type}
             prefilledPhone={searchParams.phone}
           />
         </div>
