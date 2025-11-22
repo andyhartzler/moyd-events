@@ -46,11 +46,13 @@ export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone 
 
       // Handle the 3 possible outcomes
       if (data.success && data.found) {
-        // Successfully RSVPd
+        // Successfully RSVPd - set cookie to remember this RSVP
+        document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
         setUserName(data.name || '');
         setStep('success');
       } else if (!data.success && data.found) {
-        // Already registered
+        // Already registered - set cookie to remember this RSVP
+        document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
         setUserName(data.name || '');
         setStep('already-registered');
       } else if (!data.found) {
