@@ -11,6 +11,31 @@ const montserrat = Montserrat({ subsets: ['latin'], weight: ['400', '500', '600'
 export const metadata: Metadata = {
   title: 'Events - Missouri Young Democrats',
   description: 'Join us at Missouri Young Democrats events. Connect, organize, and make a difference in our community.',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
+  openGraph: {
+    title: 'Events - Missouri Young Democrats',
+    description: 'Join us at Missouri Young Democrats events. Connect, organize, and make a difference in our community.',
+    images: [
+      {
+        url: '/social-share-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Missouri Young Democrats Events',
+      },
+    ],
+    type: 'website',
+    siteName: 'Missouri Young Democrats',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Events - Missouri Young Democrats',
+    description: 'Join us at Missouri Young Democrats events. Connect, organize, and make a difference in our community.',
+    images: ['/social-share-image.png'],
+  },
 };
 
 export default function RootLayout({

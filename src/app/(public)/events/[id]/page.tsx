@@ -1,27 +1,36 @@
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
 import { ShareButton } from '@/components/events/ShareButton';
 import { EventMap } from '@/components/events/EventMap';
 import { formatEventDate } from '@/lib/utils/formatters';
 import { parseEventSlug } from '@/lib/utils/slugify';
+import { Event } from '@/types/database.types';
 
-export default async function EventDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+// Helper function to get Supabase storage URL for an image
+function getStorageImageUrl(image: Event['website_image'] | Event['social_share_image']): string | null {
+  if (!image) return null;
+
+  // If the image already has a full URL, use it
+  if (image.url) return image.url;
+
+  // Construct URL from path
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl || !image.path) return null;
+
+  return `${supabaseUrl}/storage/v1/object/public/events/${image.path}`;
+}
+
+// Helper to fetch event by slug or ID
+async function getEventBySlugOrId(id: string) {
   const supabase = createClient();
-
-  // Try to parse as slug first, fallback to UUID
-  const slugData = parseEventSlug(params.id);
-
-  let event;
+  const slugData = parseEventSlug(id);
 
   if (slugData) {
-    // Query by title pattern and date range
     const { data: events } = await supabase
       .from('events')
       .select('*')
@@ -31,20 +40,73 @@ export default async function EventDetailPage({
       .eq('status', 'published')
       .limit(1)
       .single();
-
-    event = events;
-  } else {
-    // Fallback to UUID lookup for backward compatibility
-    const { data } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', params.id)
-      .single();
-
-    event = data;
+    return events;
   }
 
+  const { data } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', id)
+    .single();
+  return data;
+}
+
+// Generate dynamic metadata for social sharing
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const event = await getEventBySlugOrId(params.id) as Event | null;
+
+  if (!event) {
+    return {
+      title: 'Event Not Found - Missouri Young Democrats',
+    };
+  }
+
+  const socialShareImageUrl = getStorageImageUrl(event.social_share_image);
+  const defaultShareImage = '/social-share-image.png';
+  const shareImage = socialShareImageUrl || defaultShareImage;
+
+  return {
+    title: `${event.title} - Missouri Young Democrats`,
+    description: event.description || `Join us at ${event.title}! Connect, organize, and make a difference in our community.`,
+    openGraph: {
+      title: event.title,
+      description: event.description || `Join us at ${event.title}!`,
+      images: [
+        {
+          url: shareImage,
+          width: 1200,
+          height: 630,
+          alt: event.title,
+        },
+      ],
+      type: 'website',
+      siteName: 'Missouri Young Democrats',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: event.title,
+      description: event.description || `Join us at ${event.title}!`,
+      images: [shareImage],
+    },
+  };
+}
+
+export default async function EventDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const supabase = createClient();
+  const event = await getEventBySlugOrId(params.id) as Event | null;
+
   if (!event) notFound();
+
+  // Get website image URL if available
+  const websiteImageUrl = getStorageImageUrl(event.website_image);
 
   // Check if user has RSVPd
   const { data: { user } } = await supabase.auth.getUser();
@@ -54,7 +116,7 @@ export default async function EventDetailPage({
     const { data: rsvp } = await supabase
       .from('event_attendees')
       .select('id')
-      .eq('event_id', params.id)
+      .eq('event_id', event.id)
       .eq('member_id', user.id)
       .single();
 
@@ -123,6 +185,20 @@ export default async function EventDetailPage({
                       </p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Event Poster Image */}
+              {websiteImageUrl && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-4 flex justify-center">
+                  <div className="relative w-full max-w-xs">
+                    <img
+                      src={websiteImageUrl}
+                      alt={`${event.title} event poster`}
+                      className="w-full h-auto rounded-lg shadow-md object-contain"
+                      style={{ maxHeight: '400px' }}
+                    />
+                  </div>
                 </div>
               )}
 
