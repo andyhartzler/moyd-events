@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info } from 'lucide-react';
+import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info, Lock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
@@ -127,6 +127,9 @@ export default async function EventDetailPage({
     ? Math.round((count / event.max_attendees) * 100)
     : 0;
 
+  // Check if address should be hidden (hide_address_before_rsvp is true AND user hasn't RSVPd)
+  const shouldHideAddress = event.hide_address_before_rsvp && !hasRSVPd;
+
   return (
     <div className="py-8">
       {/* Back Button */}
@@ -173,7 +176,9 @@ export default async function EventDetailPage({
             <div className="flex flex-col gap-4 lg:col-start-1">
               {/* RSVP Button for upcoming events, Subscribe for past events */}
               {isEventPast ? (
-                <SubscribeButton />
+                <div id="subscribe-form">
+                  <SubscribeButton />
+                </div>
               ) : (
                 event.rsvp_enabled && (
                   <div>
@@ -213,7 +218,7 @@ export default async function EventDetailPage({
                   </h2>
                   <div className="space-y-1 mb-4">
                     <p className="text-base font-semibold text-gray-900">{event.location}</p>
-                    {event.location_address && (
+                    {event.location_address && !shouldHideAddress && (
                       <a
                         href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
                         target="_blank"
@@ -223,14 +228,41 @@ export default async function EventDetailPage({
                         {event.location_address}
                       </a>
                     )}
+                    {shouldHideAddress && (
+                      <p className="text-sm text-gray-500 italic">Address revealed after RSVP</p>
+                    )}
                   </div>
 
                   {/* Apple Maps Integration */}
-                  <EventMap
-                    location={event.location}
-                    locationAddress={event.location_address}
-                    eventTitle={event.title}
-                  />
+                  <div className="relative">
+                    <div className={shouldHideAddress ? 'blur-sm' : ''}>
+                      <EventMap
+                        location={event.location}
+                        locationAddress={event.location_address}
+                        eventTitle={event.title}
+                      />
+                    </div>
+                    {shouldHideAddress && (
+                      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
+                        <Lock className="w-10 h-10 text-[#273351] mb-3" />
+                        {isEventPast ? (
+                          <a
+                            href="#subscribe-form"
+                            className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
+                          >
+                            RSVP for the Address
+                          </a>
+                        ) : (
+                          <Link
+                            href={`/events/${params.id}/register`}
+                            className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
+                          >
+                            RSVP for the Address
+                          </Link>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
