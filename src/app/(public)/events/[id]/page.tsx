@@ -162,7 +162,7 @@ export default async function EventDetailPage({
             </div>
           </div>
 
-          {/* Two Column Layout: Info Tiles on Left, Map on Right (Mobile: Stacked) */}
+          {/* Two Column Layout: Info Tiles on Left, Poster Image on Right (Mobile: Stacked) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:items-start">
             {/* Left Column - Stacked tiles */}
             <div className="flex flex-col gap-4 lg:col-start-1">
@@ -180,21 +180,7 @@ export default async function EventDetailPage({
                 </div>
               )}
 
-              {/* Event Poster Image */}
-              {websiteImageUrl && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-4 flex justify-center">
-                  <div className="relative w-full max-w-xs">
-                    <img
-                      src={websiteImageUrl}
-                      alt={`${event.title} event poster`}
-                      className="w-full h-auto rounded-lg shadow-md object-contain"
-                      style={{ maxHeight: '400px' }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* About This Event - Second on mobile and desktop */}
+              {/* About This Event */}
               {event.description && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
                   <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
@@ -209,37 +195,50 @@ export default async function EventDetailPage({
                 </div>
               )}
 
-              {/* Share Button - Last on mobile and desktop */}
+              {/* Location Map - Now on left side */}
+              {event.location && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
+                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
+                    <MapPin className="w-6 h-6 mr-3" />
+                    Location
+                  </h2>
+                  <div className="space-y-2 mb-6">
+                    <p className="text-lg font-semibold text-gray-900">{event.location}</p>
+                    {event.location_address && (
+                      <a
+                        href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 underline hover:text-[#273351] transition-colors"
+                      >
+                        {event.location_address}
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Apple Maps Integration */}
+                  <EventMap
+                    location={event.location}
+                    locationAddress={event.location_address}
+                    eventTitle={event.title}
+                  />
+                </div>
+              )}
+
+              {/* Share Button */}
               <ShareButton title={event.title} asCard={true} />
             </div>
 
-            {/* Location Map - After left column on mobile, Right column on desktop */}
-            {event.location && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8 lg:col-start-2 lg:row-start-1">
-                <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                  <MapPin className="w-6 h-6 mr-3" />
-                  Location
-                </h2>
-                <div className="space-y-2 mb-6">
-                  <p className="text-lg font-semibold text-gray-900">{event.location}</p>
-                  {event.location_address && (
-                    <a
-                      href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-600 underline hover:text-[#273351] transition-colors"
-                    >
-                      {event.location_address}
-                    </a>
-                  )}
+            {/* Right Column - Event Poster Image */}
+            {websiteImageUrl && (
+              <div className="lg:col-start-2 lg:row-start-1">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-soft p-3">
+                  <img
+                    src={websiteImageUrl}
+                    alt={`${event.title} event poster`}
+                    className="w-full h-auto rounded-lg shadow-md object-contain"
+                  />
                 </div>
-
-                {/* Apple Maps Integration */}
-                <EventMap
-                  location={event.location}
-                  locationAddress={event.location_address}
-                  eventTitle={event.title}
-                />
               </div>
             )}
           </div>
