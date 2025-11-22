@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Script from 'next/script';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 import { MobileMenu } from '@/components/MobileMenu';
 import './globals.css';
 
@@ -268,6 +269,7 @@ export default function RootLayout({
           </a>
         </footer>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
