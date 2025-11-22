@@ -98,7 +98,7 @@ export function SubscribeButton() {
           size="lg"
           className="w-full text-lg py-6 h-14"
         >
-          Subscribe for Updates
+          Stay Up To Date on Future Events
         </Button>
       </div>
     );
@@ -106,7 +106,7 @@ export function SubscribeButton() {
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5">
-      <h3 className="text-xl font-bold text-[#273351] mb-4">Stay Updated on Our Events</h3>
+      <h3 className="text-xl font-bold text-[#273351] mb-4">Stay Up To Date on Future Events</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
