@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
-import { ShareButton } from '@/components/events/ShareButton';
+import { SubscribeButton } from '@/components/events/SubscribeButton';
 import { EventMap } from '@/components/events/EventMap';
 import { formatEventDate } from '@/lib/utils/formatters';
 import { parseEventSlug } from '@/lib/utils/slugify';
@@ -100,6 +100,11 @@ export default async function EventDetailPage({
   // Get website image URL if available
   const websiteImageUrl = getStorageImageUrl(event.website_image);
 
+  // Check if event is past (more than 2 hours after event date)
+  const eventDateTime = new Date(event.event_date);
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  const isEventPast = eventDateTime < twoHoursAgo;
+
   // Check if user has RSVPd
   const { data: { user } } = await supabase.auth.getUser();
   let hasRSVPd = false;
@@ -166,29 +171,33 @@ export default async function EventDetailPage({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:items-start">
             {/* Left Column - Stacked tiles */}
             <div className="flex flex-col gap-4 lg:col-start-1">
-              {/* RSVP Button - First on mobile, Top left on desktop */}
-              {event.rsvp_enabled && (
-                <div>
-                  <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} eventDate={event.event_date} />
-                  {hasRSVPd && (
-                    <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg mt-4">
-                      <p className="text-sm text-green-200 font-medium text-center">
-                        ✓ You're registered for this event!
-                      </p>
-                    </div>
-                  )}
-                </div>
+              {/* RSVP Button for upcoming events, Subscribe for past events */}
+              {isEventPast ? (
+                <SubscribeButton />
+              ) : (
+                event.rsvp_enabled && (
+                  <div>
+                    <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} eventDate={event.event_date} />
+                    {hasRSVPd && (
+                      <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg mt-4">
+                        <p className="text-sm text-green-200 font-medium text-center">
+                          ✓ You're registered for this event!
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )
               )}
 
               {/* About This Event */}
               {event.description && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
-                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                    <Info className="w-6 h-6 mr-3" />
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5">
+                  <h2 className="text-xl font-bold text-[#273351] mb-3 flex items-center">
+                    <Info className="w-5 h-5 mr-2" />
                     About This Event
                   </h2>
-                  <div className="prose prose-lg max-w-none">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  <div className="prose max-w-none">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm">
                       {event.description}
                     </p>
                   </div>
@@ -197,19 +206,19 @@ export default async function EventDetailPage({
 
               {/* Location Map - Now on left side */}
               {event.location && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-8">
-                  <h2 className="text-2xl font-bold text-[#273351] mb-4 flex items-center">
-                    <MapPin className="w-6 h-6 mr-3" />
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5">
+                  <h2 className="text-xl font-bold text-[#273351] mb-3 flex items-center">
+                    <MapPin className="w-5 h-5 mr-2" />
                     Location
                   </h2>
-                  <div className="space-y-2 mb-6">
-                    <p className="text-lg font-semibold text-gray-900">{event.location}</p>
+                  <div className="space-y-1 mb-4">
+                    <p className="text-base font-semibold text-gray-900">{event.location}</p>
                     {event.location_address && (
                       <a
                         href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-600 underline hover:text-[#273351] transition-colors"
+                        className="text-sm text-gray-600 underline hover:text-[#273351] transition-colors"
                       >
                         {event.location_address}
                       </a>
@@ -224,9 +233,6 @@ export default async function EventDetailPage({
                   />
                 </div>
               )}
-
-              {/* Share Button */}
-              <ShareButton title={event.title} asCard={true} />
             </div>
 
             {/* Right Column - Event Poster Image */}
