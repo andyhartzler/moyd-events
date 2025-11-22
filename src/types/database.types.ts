@@ -1,3 +1,10 @@
+// Supabase Storage image object structure
+export interface StorageImage {
+  path: string;
+  fullPath?: string;
+  url?: string;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -22,6 +29,8 @@ export interface Event {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  website_image: StorageImage | null;
+  social_share_image: StorageImage | null;
 }
 
 export interface EventAttendee {
