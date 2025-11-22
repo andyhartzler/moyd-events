@@ -4,15 +4,17 @@ import { useState } from 'react';
 import { EventCard } from '@/components/events/EventCard';
 import { EventCalendar } from '@/components/calendar/EventCalendar';
 import { MobileEventCalendar } from '@/components/calendar/MobileEventCalendar';
+import { SubscribeButton } from '@/components/events/SubscribeButton';
 import { Calendar, List } from 'lucide-react';
 import type { EventWithRSVP } from '@/types/database.types';
 
 interface EventsPageClientProps {
   upcomingEvents: EventWithRSVP[];
+  pastEvents: EventWithRSVP[];
   allEvents: EventWithRSVP[];
 }
 
-export function EventsPageClient({ upcomingEvents, allEvents }: EventsPageClientProps) {
+export function EventsPageClient({ upcomingEvents, pastEvents, allEvents }: EventsPageClientProps) {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   return (
@@ -68,20 +70,39 @@ export function EventsPageClient({ upcomingEvents, allEvents }: EventsPageClient
               <MobileEventCalendar events={allEvents} />
             </div>
           </>
-        ) : upcomingEvents && upcomingEvents.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {upcomingEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
         ) : (
-          <div className="text-center py-16">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-12 max-w-md mx-auto">
-              <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">No Upcoming Events</h3>
-              <p className="text-gray-600">Check back soon for new events and opportunities to get involved!</p>
-            </div>
-          </div>
+          <>
+            {/* Upcoming Events */}
+            {upcomingEvents && upcomingEvents.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {upcomingEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-8 max-w-md mx-auto">
+                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">No Upcoming Events</h3>
+                  <SubscribeButton />
+                </div>
+              </div>
+            )}
+
+            {/* Past Events Section */}
+            {pastEvents && pastEvents.length > 0 && (
+              <div className="mt-16">
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 text-center">
+                  Past Events
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {pastEvents.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

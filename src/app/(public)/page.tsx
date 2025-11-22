@@ -13,6 +13,15 @@ export default async function EventsPage() {
     .or(`event_date.gte.${currentDate},event_end_date.gte.${currentDate}`)
     .order('event_date', { ascending: true });
 
+  // Get past events for LIST VIEW
+  const { data: pastEvents } = await supabase
+    .from('events')
+    .select('*')
+    .eq('status', 'published')
+    .lt('event_date', currentDate)
+    .or(`event_end_date.lt.${currentDate},event_end_date.is.null`)
+    .order('event_date', { ascending: false });
+
   // Get ALL published events for CALENDAR VIEW (past, present, future)
   const { data: allPublishedEvents } = await supabase
     .from('events')
@@ -23,6 +32,7 @@ export default async function EventsPage() {
   return (
     <EventsPageClient
       upcomingEvents={upcomingEvents || []}
+      pastEvents={pastEvents || []}
       allEvents={allPublishedEvents || []}
     />
   );
