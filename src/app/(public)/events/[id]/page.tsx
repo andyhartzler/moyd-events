@@ -14,15 +14,7 @@ import { Event } from '@/types/database.types';
 // Helper function to get Supabase storage URL for an image
 function getStorageImageUrl(image: Event['website_image'] | Event['social_share_image']): string | null {
   if (!image) return null;
-
-  // If the image already has a full URL, use it
-  if (image.url) return image.url;
-
-  // Construct URL from path
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl || !image.path) return null;
-
-  return `${supabaseUrl}/storage/v1/object/public/events/${image.path}`;
+  return image.storage_url || null;
 }
 
 // Helper to fetch event by slug or ID
