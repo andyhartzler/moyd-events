@@ -3,6 +3,7 @@ import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
 import Image from 'next/image';
 import Script from 'next/script';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { MobileMenu } from '@/components/MobileMenu';
 import './globals.css';
 
@@ -266,6 +267,7 @@ export default function RootLayout({
             />
           </a>
         </footer>
+        <SpeedInsights />
       </body>
     </html>
   );
