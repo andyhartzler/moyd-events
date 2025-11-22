@@ -89,6 +89,13 @@ export function EventsPageClient({ upcomingEvents, pastEvents, allEvents }: Even
               </div>
             )}
 
+            {/* Subscribe Button - Always show at bottom when there are upcoming events */}
+            {upcomingEvents && upcomingEvents.length > 0 && (
+              <div className="mt-12 max-w-md mx-auto">
+                <SubscribeButton />
+              </div>
+            )}
+
             {/* Past Events Section */}
             {pastEvents && pastEvents.length > 0 && (
               <div className="mt-16">
