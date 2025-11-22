@@ -214,7 +214,10 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
 
       if (attendeeError) throw attendeeError;
 
-      // Step 3: Show success
+      // Step 3: Set cookie to remember this RSVP for address reveal
+      document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+
+      // Step 4: Show success
       setSuccess(true);
     } catch (err: any) {
       console.error('Registration error:', err);

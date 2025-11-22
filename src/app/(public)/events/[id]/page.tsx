@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info, Lock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -105,11 +106,19 @@ export default async function EventDetailPage({
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
   const isEventPast = eventDateTime < twoHoursAgo;
 
-  // Check if user has RSVPd
+  // Check if user has RSVPd (via auth OR cookie for guest RSVPs)
   const { data: { user } } = await supabase.auth.getUser();
   let hasRSVPd = false;
 
-  if (user) {
+  // Check for RSVP cookie (set when guest registers)
+  const cookieStore = cookies();
+  const rsvpCookie = cookieStore.get(`rsvp_${event.id}`);
+  if (rsvpCookie?.value === 'true') {
+    hasRSVPd = true;
+  }
+
+  // Also check authenticated user's RSVPs
+  if (!hasRSVPd && user) {
     const { data: rsvp } = await supabase
       .from('event_attendees')
       .select('id')
@@ -227,9 +236,6 @@ export default async function EventDetailPage({
                       >
                         {event.location_address}
                       </a>
-                    )}
-                    {shouldHideAddress && (
-                      <p className="text-sm text-gray-500 italic">Address revealed after RSVP</p>
                     )}
                   </div>
 
