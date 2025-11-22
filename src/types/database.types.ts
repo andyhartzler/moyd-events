@@ -34,6 +34,7 @@ export interface Event {
   updated_at: string;
   website_image: StorageImage | null;
   social_share_image: StorageImage | null;
+  hide_address_before_rsvp: boolean | null;
 }
 
 export interface EventAttendee {
