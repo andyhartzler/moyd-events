@@ -79,7 +79,7 @@ export default function RootLayout({
         />
 
         {/* Header */}
-        <header className="relative z-50 shadow-header">
+        <header className="relative z-50">
           {/* Header Title Nav Wrapper */}
           <div className="header-title-nav-wrapper flex items-center justify-between" style={{
             paddingLeft: '2.7vw',
@@ -240,7 +240,7 @@ export default function RootLayout({
             target="_blank"
             rel="noopener noreferrer"
             className="scrolling-banner block overflow-hidden py-4 relative"
-            style={{ backgroundColor: '#A9CCE1' }}
+            style={{ backgroundColor: 'rgba(169, 204, 225, 0.65)' }}
           >
             <div className="marquee-container">
               <div className="marquee-content">

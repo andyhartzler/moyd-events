@@ -84,12 +84,12 @@
 
   .scrolling-banner::before {
     left: 0;
-    background: linear-gradient(to right, #A9CCE1, transparent);
+    background: linear-gradient(to right, rgba(169, 204, 225, 0.65), transparent);
   }
 
   .scrolling-banner::after {
     right: 0;
-    background: linear-gradient(to left, #A9CCE1, transparent);
+    background: linear-gradient(to left, rgba(169, 204, 225, 0.65), transparent);
   }
 
   .marquee-container {
