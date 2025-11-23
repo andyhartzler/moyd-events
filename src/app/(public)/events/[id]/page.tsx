@@ -18,6 +18,37 @@ function getStorageImageUrl(image: Event['website_image'] | Event['social_share_
   return image.storage_url || null;
 }
 
+// Helper to get all populated locations for multi-location events
+interface LocationInfo {
+  name: string;
+  address: string | null;
+}
+
+function getPopulatedLocations(event: Event): LocationInfo[] {
+  const locations: LocationInfo[] = [];
+
+  if (event.location_one_name) {
+    locations.push({
+      name: event.location_one_name,
+      address: event.location_one_address,
+    });
+  }
+  if (event.location_two_name) {
+    locations.push({
+      name: event.location_two_name,
+      address: event.location_two_address,
+    });
+  }
+  if (event.location_three_name) {
+    locations.push({
+      name: event.location_three_name,
+      address: event.location_three_address,
+    });
+  }
+
+  return locations;
+}
+
 // Helper to fetch event by slug or ID
 async function getEventBySlugOrId(id: string) {
   const supabase = createClient();
@@ -171,6 +202,11 @@ export default async function EventDetailPage({
   // Check if address should be hidden (hide_address_before_rsvp is true AND user hasn't RSVPd)
   const shouldHideAddress = event.hide_address_before_rsvp && !hasRSVPd;
 
+  // Get locations for multi-location events
+  const isMultiLocation = event.multiple_locations === true;
+  const multiLocations = isMultiLocation ? getPopulatedLocations(event) : [];
+  const locationCount = multiLocations.length;
+
   return (
     <div className="py-8">
       {/* Back Button */}
@@ -250,58 +286,120 @@ export default async function EventDetailPage({
                 </div>
               )}
 
-              {/* Location Map - Grows to fill remaining space on desktop */}
-              {event.location && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5 lg:flex-1 flex flex-col">
-                  <h2 className="text-xl font-bold text-[#273351] mb-3 flex items-center">
-                    <MapPin className="w-5 h-5 mr-2" />
-                    Location
-                  </h2>
-                  <div className="space-y-1 mb-4">
-                    <p className="text-base font-semibold text-gray-900">{event.location}</p>
-                    {event.location_address && !shouldHideAddress && (
+              {/* Location Map(s) - Handle single or multiple locations */}
+              {isMultiLocation ? (
+                /* Multiple Locations - Render a map tile for each location */
+                multiLocations.map((loc, index) => (
+                  <div
+                    key={index}
+                    className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-4 flex flex-col ${
+                      locationCount === 1 ? 'lg:flex-1' : ''
+                    }`}
+                  >
+                    <h2 className="text-lg font-bold text-[#273351] mb-2 flex items-center">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      {loc.name}
+                    </h2>
+                    {loc.address && !shouldHideAddress && (
                       <a
-                        href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
+                        href={`https://maps.apple.com/?address=${encodeURIComponent(loc.address)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-600 underline hover:text-[#273351] transition-colors"
+                        className="text-sm text-gray-600 underline hover:text-[#273351] transition-colors mb-2"
                       >
-                        {event.location_address}
+                        {loc.address}
                       </a>
                     )}
-                  </div>
 
-                  {/* Apple Maps Integration - Grows to fill available space */}
-                  <div className="relative flex-1 min-h-[200px]">
-                    <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
-                      <EventMap
-                        location={event.location}
-                        locationAddress={shouldHideAddress ? null : event.location_address}
-                        eventTitle={event.title}
-                      />
-                    </div>
-                    {shouldHideAddress && (
-                      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
-                        <Lock className="w-10 h-10 text-[#273351] mb-3" />
-                        {isEventPast ? (
-                          <a
-                            href="#subscribe-form"
-                            className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
-                          >
-                            RSVP for the Address
-                          </a>
-                        ) : (
-                          <Link
-                            href={`/events/${params.id}/register`}
-                            className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
-                          >
-                            RSVP for the Address
-                          </Link>
-                        )}
+                    {/* Map - Smaller when there are multiple locations */}
+                    <div className={`relative ${
+                      locationCount === 1 ? 'flex-1 min-h-[200px]' :
+                      locationCount === 2 ? 'min-h-[150px]' : 'min-h-[120px]'
+                    }`}>
+                      <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
+                        <EventMap
+                          location={loc.name}
+                          locationAddress={shouldHideAddress ? null : loc.address}
+                          eventTitle={event.title}
+                        />
                       </div>
-                    )}
+                      {shouldHideAddress && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
+                          <Lock className="w-8 h-8 text-[#273351] mb-2" />
+                          {isEventPast ? (
+                            <a
+                              href="#subscribe-form"
+                              className="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors shadow-md text-sm"
+                            >
+                              RSVP for Address
+                            </a>
+                          ) : (
+                            <Link
+                              href={`/events/${params.id}/register`}
+                              className="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors shadow-md text-sm"
+                            >
+                              RSVP for Address
+                            </Link>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ))
+              ) : (
+                /* Single Location - Original behavior */
+                event.location && (
+                  <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5 lg:flex-1 flex flex-col">
+                    <h2 className="text-xl font-bold text-[#273351] mb-3 flex items-center">
+                      <MapPin className="w-5 h-5 mr-2" />
+                      Location
+                    </h2>
+                    <div className="space-y-1 mb-4">
+                      <p className="text-base font-semibold text-gray-900">{event.location}</p>
+                      {event.location_address && !shouldHideAddress && (
+                        <a
+                          href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-gray-600 underline hover:text-[#273351] transition-colors"
+                        >
+                          {event.location_address}
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Apple Maps Integration - Grows to fill available space */}
+                    <div className="relative flex-1 min-h-[200px]">
+                      <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
+                        <EventMap
+                          location={event.location}
+                          locationAddress={shouldHideAddress ? null : event.location_address}
+                          eventTitle={event.title}
+                        />
+                      </div>
+                      {shouldHideAddress && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
+                          <Lock className="w-10 h-10 text-[#273351] mb-3" />
+                          {isEventPast ? (
+                            <a
+                              href="#subscribe-form"
+                              className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
+                            >
+                              RSVP for the Address
+                            </a>
+                          ) : (
+                            <Link
+                              href={`/events/${params.id}/register`}
+                              className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
+                            >
+                              RSVP for the Address
+                            </Link>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
               )}
             </div>
 
