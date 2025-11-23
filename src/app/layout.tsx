@@ -79,7 +79,12 @@ export default function RootLayout({
         />
 
         {/* Header */}
-        <header className="relative z-50">
+        <header
+          className="relative z-50 shadow-header"
+          style={{
+            background: 'linear-gradient(180deg, #5B9FBD 0%, #3D7A94 100%)',
+          }}
+        >
           {/* Header Title Nav Wrapper */}
           <div className="header-title-nav-wrapper flex items-center justify-between" style={{
             paddingLeft: '2.7vw',
@@ -239,15 +244,15 @@ export default function RootLayout({
             href="https://secure.actblue.com/donate/moyd"
             target="_blank"
             rel="noopener noreferrer"
-            className="block overflow-hidden py-4"
-            style={{ backgroundColor: '#43729C' }}
+            className="scrolling-banner block overflow-hidden py-4 relative"
+            style={{ backgroundColor: '#A9CCE1' }}
           >
             <div className="marquee-container">
               <div className="marquee-content">
-                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
-                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
-                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
-                <span className="marquee-text">DONATE TODAY — YOUR SUPPORT MAKES EVERYTHING POSSIBLE — </span>
+                <span className="marquee-text">YOUR SUPPORT MAKES EVERYTHING POSSIBLE — DONATE TODAY — </span>
+                <span className="marquee-text">YOUR SUPPORT MAKES EVERYTHING POSSIBLE — DONATE TODAY — </span>
+                <span className="marquee-text">YOUR SUPPORT MAKES EVERYTHING POSSIBLE — DONATE TODAY — </span>
+                <span className="marquee-text">YOUR SUPPORT MAKES EVERYTHING POSSIBLE — DONATE TODAY — </span>
               </div>
             </div>
           </a>

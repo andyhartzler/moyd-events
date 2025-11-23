@@ -27,15 +27,24 @@ const config: Config = {
           red: '#dc2626',
           gold: '#d97706',
         },
+        // MOYD brand colors
+        moyd: {
+          'blue-light': '#5B9FBD',
+          'blue-dark': '#3D7A94',
+          'banner': '#A9CCE1',
+          'navy': '#273351',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        heading: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Montserrat', 'system-ui', 'sans-serif'],
+        heading: ['Montserrat', 'system-ui', 'sans-serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
       },
       boxShadow: {
         'soft': '0 2px 15px 0 rgba(0, 0, 0, 0.08)',
         'medium': '0 4px 25px 0 rgba(0, 0, 0, 0.12)',
         'large': '0 10px 40px 0 rgba(0, 0, 0, 0.15)',
+        'header': '0px 12px 12px 0px rgba(0, 0, 0, 0.25)',
       },
     },
   },
