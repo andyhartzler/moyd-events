@@ -68,12 +68,6 @@ export function EventCard({ event }: EventCardProps) {
               <span className="text-sm font-medium">{event.location}</span>
             </div>
           )}
-
-          {event.description && (
-            <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
-              {event.description}
-            </p>
-          )}
         </div>
 
         {/* Footer */}

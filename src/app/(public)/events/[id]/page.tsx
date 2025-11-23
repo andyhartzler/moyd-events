@@ -244,7 +244,7 @@ export default async function EventDetailPage({
                     <div className={shouldHideAddress ? 'blur-sm' : ''}>
                       <EventMap
                         location={event.location}
-                        locationAddress={event.location_address}
+                        locationAddress={shouldHideAddress ? null : event.location_address}
                         eventTitle={event.title}
                       />
                     </div>
