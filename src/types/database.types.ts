@@ -35,6 +35,13 @@ export interface Event {
   website_image: StorageImage | null;
   social_share_image: StorageImage | null;
   hide_address_before_rsvp: boolean | null;
+  multiple_locations: boolean | null;
+  location_one_name: string | null;
+  location_one_address: string | null;
+  location_two_name: string | null;
+  location_two_address: string | null;
+  location_three_name: string | null;
+  location_three_address: string | null;
 }
 
 export interface EventAttendee {
