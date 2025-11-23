@@ -24,6 +24,7 @@ async function getEventBySlugOrId(id: string) {
   const slugData = parseEventSlug(id);
 
   if (slugData) {
+    // First try: match by date range and title pattern
     const { data: events } = await supabase
       .from('events')
       .select('*')
@@ -33,7 +34,38 @@ async function getEventBySlugOrId(id: string) {
       .eq('status', 'published')
       .limit(1)
       .single();
-    return events;
+
+    if (events) return events;
+
+    // Second try: match by date range and first few words of title
+    // This handles cases where special characters (like &) were removed from slug
+    const titleWords = slugData.titlePattern.split(' ').filter(w => w.length > 2);
+    if (titleWords.length >= 2) {
+      const firstWords = titleWords.slice(0, 2).join('%');
+      const { data: eventsPartial } = await supabase
+        .from('events')
+        .select('*')
+        .gte('event_date', slugData.dateStart)
+        .lte('event_date', slugData.dateEnd)
+        .ilike('title', `%${firstWords}%`)
+        .eq('status', 'published')
+        .limit(1)
+        .single();
+
+      if (eventsPartial) return eventsPartial;
+    }
+
+    // Third try: just match by date (fallback for single event days)
+    const { data: eventsByDate } = await supabase
+      .from('events')
+      .select('*')
+      .gte('event_date', slugData.dateStart)
+      .lte('event_date', slugData.dateEnd)
+      .eq('status', 'published')
+      .limit(1)
+      .single();
+
+    return eventsByDate;
   }
 
   const { data } = await supabase
