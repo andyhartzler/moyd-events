@@ -79,12 +79,7 @@ export default function RootLayout({
         />
 
         {/* Header */}
-        <header
-          className="relative z-50 shadow-header"
-          style={{
-            background: 'linear-gradient(180deg, #5B9FBD 0%, #3D7A94 100%)',
-          }}
-        >
+        <header className="relative z-50 shadow-header">
           {/* Header Title Nav Wrapper */}
           <div className="header-title-nav-wrapper flex items-center justify-between" style={{
             paddingLeft: '2.7vw',
