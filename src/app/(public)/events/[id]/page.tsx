@@ -248,7 +248,7 @@ export default async function EventDetailPage({
           </div>
 
           {/* Two Column Layout: Info Tiles on Left, Poster Image on Right (Mobile: Stacked) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:items-start">
             {/* Left Column - Stacked tiles */}
             <div className="flex flex-col gap-4 lg:col-start-1">
               {/* RSVP Button for upcoming events, Subscribe for past events */}
@@ -292,29 +292,30 @@ export default async function EventDetailPage({
                 multiLocations.map((loc, index) => (
                   <div
                     key={index}
-                    className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-4 flex flex-col ${
-                      locationCount === 1 ? 'lg:flex-1' : ''
-                    }`}
+                    className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-4"
                   >
                     <h2 className="text-lg font-bold text-[#273351] mb-2 flex items-center">
                       <MapPin className="w-4 h-4 mr-2" />
-                      {loc.name}
+                      {loc.address && !shouldHideAddress ? (
+                        <a
+                          href={`https://maps.apple.com/?address=${encodeURIComponent(loc.address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-gray-700 hover:text-[#273351] transition-colors font-normal"
+                        >
+                          <span className="font-semibold">{loc.name}</span>
+                          <span className="mx-2">·</span>
+                          <span className="underline">{loc.address}</span>
+                        </a>
+                      ) : (
+                        <span>{loc.name}</span>
+                      )}
                     </h2>
-                    {loc.address && !shouldHideAddress && (
-                      <a
-                        href={`https://maps.apple.com/?address=${encodeURIComponent(loc.address)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-gray-600 underline hover:text-[#273351] transition-colors mb-2"
-                      >
-                        {loc.address}
-                      </a>
-                    )}
 
                     {/* Map - Smaller when there are multiple locations */}
                     <div className={`relative ${
-                      locationCount === 1 ? 'flex-1 min-h-[200px]' :
-                      locationCount === 2 ? 'min-h-[150px]' : 'min-h-[120px]'
+                      locationCount === 1 ? 'h-[200px]' :
+                      locationCount === 2 ? 'h-[150px]' : 'h-[120px]'
                     }`}>
                       <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
                         <EventMap
@@ -347,29 +348,32 @@ export default async function EventDetailPage({
                   </div>
                 ))
               ) : (
-                /* Single Location - Original behavior */
+                /* Single Location */
                 event.location && (
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5 lg:flex-1 flex flex-col">
-                    <h2 className="text-xl font-bold text-[#273351] mb-3 flex items-center">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5">
+                    <h2 className="text-xl font-bold text-[#273351] mb-2 flex items-center">
                       <MapPin className="w-5 h-5 mr-2" />
                       Location
                     </h2>
-                    <div className="space-y-1 mb-4">
-                      <p className="text-base font-semibold text-gray-900">{event.location}</p>
-                      {event.location_address && !shouldHideAddress && (
+                    <div className="mb-3">
+                      {event.location_address && !shouldHideAddress ? (
                         <a
                           href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-gray-600 underline hover:text-[#273351] transition-colors"
+                          className="text-sm text-gray-700 hover:text-[#273351] transition-colors"
                         >
-                          {event.location_address}
+                          <span className="font-semibold">{event.location}</span>
+                          <span className="mx-2">·</span>
+                          <span className="underline">{event.location_address}</span>
                         </a>
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900">{event.location}</p>
                       )}
                     </div>
 
-                    {/* Apple Maps Integration - Grows to fill available space */}
-                    <div className="relative flex-1 min-h-[200px]">
+                    {/* Apple Maps Integration */}
+                    <div className="relative h-[200px]">
                       <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
                         <EventMap
                           location={event.location}
@@ -405,8 +409,8 @@ export default async function EventDetailPage({
 
             {/* Right Column - Event Poster Image */}
             {websiteImageUrl && (
-              <div className="lg:col-start-2 lg:row-start-1 flex flex-col">
-                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-soft p-3 lg:flex-1 flex flex-col justify-center">
+              <div className="lg:col-start-2 lg:row-start-1">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-soft p-3">
                   <img
                     src={websiteImageUrl}
                     alt={`${event.title} event poster`}
