@@ -70,6 +70,28 @@
     @apply container mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  /* Scrolling Banner Container */
+  .scrolling-banner::before,
+  .scrolling-banner::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 100px;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .scrolling-banner::before {
+    left: 0;
+    background: linear-gradient(to right, #A9CCE1, transparent);
+  }
+
+  .scrolling-banner::after {
+    right: 0;
+    background: linear-gradient(to left, #A9CCE1, transparent);
+  }
+
   .marquee-container {
     display: flex;
     overflow: hidden;
@@ -81,17 +103,31 @@
     animation: marquee 30s linear infinite;
   }
 
+  /* Pause on hover */
+  .scrolling-banner:hover .marquee-content {
+    animation-play-state: paused;
+  }
+
   .marquee-text {
     font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.06em;
     text-transform: uppercase;
     color: white;
-    padding: 0 2rem;
+    padding: 0 0.5em;
   }
 
   @keyframes marquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-content {
+      animation: none;
+    }
   }
 
   .glass-card {
