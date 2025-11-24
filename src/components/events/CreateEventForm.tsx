@@ -746,7 +746,7 @@ export function CreateEventForm() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <label className="block text-sm font-semibold text-gray-700">
               Start date & time * <span className="text-xs font-normal text-gray-500">(Central Time)</span>
             </label>
@@ -756,10 +756,10 @@ export function CreateEventForm() {
               value={formData.event.event_date}
               onChange={handleEventChange}
               required
-              className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full min-w-0 max-w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <label className="block text-sm font-semibold text-gray-700">
               End date & time <span className="text-xs font-normal text-gray-500">(Central Time)</span>
             </label>
@@ -768,7 +768,7 @@ export function CreateEventForm() {
               name="event_end_date"
               value={formData.event.event_end_date}
               onChange={handleEventChange}
-              className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full min-w-0 max-w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
         </div>
@@ -972,14 +972,14 @@ export function CreateEventForm() {
                 className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               <label className="block text-sm font-semibold text-gray-700">Date of birth</label>
               <input
                 type="date"
                 name="date_of_birth"
                 value={formData.submitter.date_of_birth}
                 onChange={handleSubmitterChange}
-                className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full min-w-0 max-w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="space-y-2 relative">
