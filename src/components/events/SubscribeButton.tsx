@@ -135,7 +135,7 @@ export function SubscribeButton({ autoOpen = false }: SubscribeButtonProps) {
           onClick={() => setIsOpen(true)}
           variant="default"
           size="lg"
-          className="w-full text-lg py-6 h-14"
+          className="w-full text-base sm:text-lg py-5 sm:py-6 h-14 whitespace-nowrap leading-tight"
         >
           Stay Up To Date on Future Events
         </Button>
