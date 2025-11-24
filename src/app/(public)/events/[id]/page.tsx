@@ -205,7 +205,16 @@ export default async function EventDetailPage({
   // Get locations for multi-location events
   const isMultiLocation = event.multiple_locations === true;
   const multiLocations = isMultiLocation ? getPopulatedLocations(event) : [];
-  const locationCount = multiLocations.length;
+  const hasMultiLocations = isMultiLocation && multiLocations.length > 0;
+  const displayLocation = hasMultiLocations
+    ? event.location || multiLocations[0].name
+    : event.location;
+  const locationCount = hasMultiLocations ? multiLocations.length : 0;
+  const mapHeightClass = locationCount === 1
+    ? 'h-[200px]'
+    : locationCount === 2
+      ? 'h-[150px]'
+      : 'h-[125px]';
 
   return (
     <div className="py-8">
@@ -238,10 +247,10 @@ export default async function EventDetailPage({
                 <Calendar className="w-6 h-6 mr-2 text-white" />
                 <span>{formatEventDate(event.event_date)}</span>
               </div>
-              {event.location && (
+              {displayLocation && (
                 <div className="flex items-center">
                   <MapPin className="w-6 h-6 mr-2 text-white" />
-                  <span>{event.location}</span>
+                  <span>{displayLocation}</span>
                 </div>
               )}
             </div>
@@ -287,7 +296,7 @@ export default async function EventDetailPage({
               )}
 
               {/* Location Map(s) - Handle single or multiple locations */}
-              {isMultiLocation ? (
+              {hasMultiLocations ? (
                 /* Multiple Locations - Render a map tile for each location */
                 multiLocations.map((loc, index) => (
                   <div
@@ -313,10 +322,7 @@ export default async function EventDetailPage({
                     </h2>
 
                     {/* Map - Smaller when there are multiple locations */}
-                    <div className={`relative ${
-                      locationCount === 1 ? 'h-[200px]' :
-                      locationCount === 2 ? 'h-[150px]' : 'h-[120px]'
-                    }`}>
+                    <div className={`relative ${mapHeightClass}`}>
                       <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
                         <EventMap
                           location={loc.name}
@@ -349,26 +355,26 @@ export default async function EventDetailPage({
                 ))
               ) : (
                 /* Single Location - grows to fill remaining column height */
-                event.location && (
+                displayLocation && (
                   <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5 lg:flex-1 flex flex-col">
                     <h2 className="text-xl font-bold text-[#273351] mb-2 flex items-center">
                       <MapPin className="w-5 h-5 mr-2" />
                       Location
                     </h2>
                     <div className="mb-3">
-                      {event.location_address && !shouldHideAddress ? (
+                      {!isMultiLocation && event.location_address && !shouldHideAddress ? (
                         <a
                           href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-gray-700 hover:text-[#273351] transition-colors"
                         >
-                          <span className="font-semibold">{event.location}</span>
+                          <span className="font-semibold">{displayLocation}</span>
                           <span className="mx-2">·</span>
                           <span className="underline">{event.location_address}</span>
                         </a>
                       ) : (
-                        <p className="text-sm font-semibold text-gray-900">{event.location}</p>
+                        <p className="text-sm font-semibold text-gray-900">{displayLocation}</p>
                       )}
                     </div>
 
@@ -376,8 +382,8 @@ export default async function EventDetailPage({
                     <div className="relative flex-1 min-h-[200px]">
                       <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
                         <EventMap
-                          location={event.location}
-                          locationAddress={shouldHideAddress ? null : event.location_address}
+                          location={displayLocation}
+                          locationAddress={shouldHideAddress ? null : (!isMultiLocation ? event.location_address : null)}
                           eventTitle={event.title}
                         />
                       </div>
