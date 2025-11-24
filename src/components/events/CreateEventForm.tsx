@@ -756,7 +756,7 @@ export function CreateEventForm() {
               value={formData.event.event_date}
               onChange={handleEventChange}
               required
-              className="w-full min-w-0 rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div className="space-y-2">
@@ -768,7 +768,7 @@ export function CreateEventForm() {
               name="event_end_date"
               value={formData.event.event_end_date}
               onChange={handleEventChange}
-              className="w-full min-w-0 rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
         </div>
@@ -979,7 +979,7 @@ export function CreateEventForm() {
                 name="date_of_birth"
                 value={formData.submitter.date_of_birth}
                 onChange={handleSubmitterChange}
-                className="w-full min-w-0 rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="space-y-2 relative">
