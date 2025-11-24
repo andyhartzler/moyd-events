@@ -190,7 +190,16 @@ export default async function EventDetailPage({
       .from('event_attendees')
       .select('id, rsvp_status')
       .eq('event_id', event.id)
-      .eq('member_id', user.id)
+      .or(
+        [
+          `member_id.eq.${user.id}`,
+          user.email ? `guest_email.eq.${user.email}` : '',
+        ]
+          .filter(Boolean)
+          .join(',')
+      )
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     hasRSVPd = rsvp?.rsvp_status === 'attending';

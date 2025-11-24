@@ -21,8 +21,17 @@ export function useRSVP() {
         .from('event_attendees')
         .select('id')
         .eq('event_id', eventId)
-        .eq('member_id', user.id)
-        .single();
+        .or(
+          [
+            `member_id.eq.${user.id}`,
+            user.email ? `guest_email.eq.${user.email}` : '',
+          ]
+            .filter(Boolean)
+            .join(',')
+        )
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (existingRsvp) {
         // Update existing record to 'attending'
@@ -33,7 +42,14 @@ export function useRSVP() {
             guest_count: guestCount,
           })
           .eq('event_id', eventId)
-          .eq('member_id', user.id);
+          .or(
+            [
+              `member_id.eq.${user.id}`,
+              user.email ? `guest_email.eq.${user.email}` : '',
+            ]
+              .filter(Boolean)
+              .join(',')
+          );
 
         if (updateError) throw updateError;
       } else {
@@ -72,7 +88,14 @@ export function useRSVP() {
         .from('event_attendees')
         .update({ rsvp_status: 'canceled' })
         .eq('event_id', eventId)
-        .eq('member_id', user.id);
+        .or(
+          [
+            `member_id.eq.${user.id}`,
+            user.email ? `guest_email.eq.${user.email}` : '',
+          ]
+            .filter(Boolean)
+            .join(',')
+        );
 
       if (updateError) throw updateError;
 
