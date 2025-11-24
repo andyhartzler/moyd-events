@@ -76,6 +76,9 @@ export function useRSVP() {
 
       if (updateError) throw updateError;
 
+      // Clear RSVP cookie so the event page doesn't treat the user as attending after canceling
+      document.cookie = `rsvp_${eventId}=false; path=/; max-age=0; SameSite=Lax`;
+
       return true;
     } catch (err: any) {
       setError(err.message);
