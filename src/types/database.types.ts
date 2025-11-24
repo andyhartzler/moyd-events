@@ -1,11 +1,18 @@
 // Supabase Storage image object structure
 export interface StorageImage {
-  file_name: string;
-  storage_url: string;
-  uploaded_at: string;
-  content_type: string;
-  storage_path: string;
-  storage_bucket: string;
+  filename: string;
+  url: string;
+  path: string;
+  uploadedAt: string;
+  mimeType: string;
+  size: number;
+
+  // Legacy fields for backward compatibility
+  file_name?: string;
+  storage_url?: string;
+  content_type?: string;
+  storage_path?: string;
+  storage_bucket?: string;
 }
 
 export interface Event {
@@ -32,8 +39,8 @@ export interface Event {
   created_by: string | null;
   created_at: string;
   updated_at: string;
-  website_image: StorageImage | null;
-  social_share_image: StorageImage | null;
+  website_image: StorageImage | StorageImage[] | null;
+  social_share_image: StorageImage | StorageImage[] | null;
   hide_address_before_rsvp: boolean | null;
   multiple_locations: boolean | null;
   location_one_name: string | null;

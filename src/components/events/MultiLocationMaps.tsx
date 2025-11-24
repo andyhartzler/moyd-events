@@ -34,17 +34,46 @@ export function MultiLocationMaps({
   posterElementId = 'event-poster-card',
 }: MultiLocationMapsProps) {
   const [calculatedHeight, setCalculatedHeight] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  // Smaller heights for mobile where layout is stacked vertically
   const fallbackHeight = useMemo(() => {
     const count = locations.length;
+
+    if (isMobile) {
+      // Mobile: use smaller, fixed heights
+      if (count <= 1) return 200;
+      if (count === 2) return 180;
+      return 160;
+    }
+
+    // Desktop: use taller fallback heights
     if (count <= 1) return 160;
     if (count === 2) return 130;
     return 110;
-  }, [locations.length]);
+  }, [locations.length, isMobile]);
+
+  // Detect mobile/desktop on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      // Tailwind lg breakpoint is 1024px
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const computeHeight = () => {
+      // On mobile, skip dynamic height calculation and use fallback
+      if (isMobile) {
+        setCalculatedHeight(null);
+        return;
+      }
+
       const poster = document.getElementById(posterElementId);
       const container = containerRef.current;
 
@@ -93,7 +122,7 @@ export function MultiLocationMaps({
 
     resizeTarget.addEventListener('resize', computeHeight);
     return () => resizeTarget.removeEventListener('resize', computeHeight);
-  }, [locations.length, posterElementId]);
+  }, [locations.length, posterElementId, isMobile]);
 
   const mapHeight = calculatedHeight ?? fallbackHeight;
 
