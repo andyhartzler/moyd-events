@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Calendar, MapPin, ArrowRight, Clock } from 'lucide-react';
-import { formatEventDate, getEventStatus } from '@/lib/utils/formatters';
+import { formatEventDateCompact, getEventStatus } from '@/lib/utils/formatters';
 import { generateEventSlug } from '@/lib/utils/slugify';
 import type { EventWithRSVP } from '@/types/database.types';
 
@@ -65,7 +65,7 @@ export function EventCard({ event }: EventCardProps) {
           <div className="flex items-start space-x-3 text-gray-700">
             <Calendar className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
             <div>
-              <div className="font-medium text-sm">{formatEventDate(event.event_date)}</div>
+              <div className="font-medium text-sm whitespace-nowrap">{formatEventDateCompact(event.event_date)}</div>
             </div>
           </div>
 
