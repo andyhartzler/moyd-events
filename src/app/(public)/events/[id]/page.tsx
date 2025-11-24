@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
 import { SubscribeButton } from '@/components/events/SubscribeButton';
 import { EventMap } from '@/components/events/EventMap';
+import { MultiLocationMaps } from '@/components/events/MultiLocationMaps';
 import { formatEventDate } from '@/lib/utils/formatters';
 import { parseEventSlug } from '@/lib/utils/slugify';
 import { Event } from '@/types/database.types';
@@ -209,12 +210,6 @@ export default async function EventDetailPage({
   const displayLocation = hasMultiLocations
     ? event.location || multiLocations[0].name
     : event.location;
-  const locationCount = hasMultiLocations ? multiLocations.length : 0;
-  const mapHeightClass = locationCount === 1
-    ? 'h-[200px]'
-    : locationCount === 2
-      ? 'h-[150px]'
-      : 'h-[125px]';
 
   return (
     <div className="py-8">
@@ -297,62 +292,13 @@ export default async function EventDetailPage({
 
               {/* Location Map(s) - Handle single or multiple locations */}
               {hasMultiLocations ? (
-                /* Multiple Locations - Render a map tile for each location */
-                multiLocations.map((loc, index) => (
-                  <div
-                    key={index}
-                    className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-4"
-                  >
-                    <h2 className="text-lg font-bold text-[#273351] mb-2 flex items-center">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {loc.address && !shouldHideAddress ? (
-                        <a
-                          href={`https://maps.apple.com/?address=${encodeURIComponent(loc.address)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-gray-700 hover:text-[#273351] transition-colors font-normal"
-                        >
-                          <span className="font-semibold">{loc.name}</span>
-                          <span className="mx-2">·</span>
-                          <span className="underline">{loc.address}</span>
-                        </a>
-                      ) : (
-                        <span>{loc.name}</span>
-                      )}
-                    </h2>
-
-                    {/* Map - Smaller when there are multiple locations */}
-                    <div className={`relative ${mapHeightClass}`}>
-                      <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
-                        <EventMap
-                          location={loc.name}
-                          locationAddress={shouldHideAddress ? null : loc.address}
-                          eventTitle={event.title}
-                        />
-                      </div>
-                      {shouldHideAddress && (
-                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
-                          <Lock className="w-8 h-8 text-[#273351] mb-2" />
-                          {isEventPast ? (
-                            <a
-                              href="#subscribe-form"
-                              className="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors shadow-md text-sm"
-                            >
-                              RSVP for Address
-                            </a>
-                          ) : (
-                            <Link
-                              href={`/events/${params.id}/register`}
-                              className="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors shadow-md text-sm"
-                            >
-                              RSVP for Address
-                            </Link>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
+                <MultiLocationMaps
+                  locations={multiLocations}
+                  shouldHideAddress={shouldHideAddress}
+                  eventTitle={event.title}
+                  eventSlug={params.id}
+                  isEventPast={isEventPast}
+                />
               ) : (
                 /* Single Location - grows to fill remaining column height */
                 displayLocation && (
@@ -415,7 +361,7 @@ export default async function EventDetailPage({
 
             {/* Right Column - Event Poster Image */}
             {websiteImageUrl && (
-              <div className="lg:col-start-2 lg:row-start-1">
+              <div className="lg:col-start-2 lg:row-start-1" id="event-poster-card">
                 <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-soft p-3">
                   <img
                     src={websiteImageUrl}
