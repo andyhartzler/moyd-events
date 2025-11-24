@@ -22,8 +22,8 @@ interface MultiLocationMapsProps {
 
 const GAP_BETWEEN_TILES = 16; // Tailwind gap-4
 const TILE_PADDING = 32; // p-4 = 16px top + 16px bottom
-const TILE_TITLE_HEIGHT = 40; // Approximate height of title + margin
-const TILE_CHROME = TILE_PADDING + TILE_TITLE_HEIGHT; // Total non-map height per tile
+const TILE_TITLE_HEIGHT = 36; // text-lg line-height (28px) + mb-2 (8px)
+const TILE_CHROME = TILE_PADDING + TILE_TITLE_HEIGHT; // Total non-map height per tile (68px)
 
 export function MultiLocationMaps({
   locations,
