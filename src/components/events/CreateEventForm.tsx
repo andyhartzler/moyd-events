@@ -85,8 +85,7 @@ export function CreateEventForm() {
     },
   });
 
-  const [memberId, setMemberId] = useState<string | null>(null);
-  const [createdById, setCreatedById] = useState<string | null>(null);
+  const [lookupUserId, setLookupUserId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupStatus, setLookupStatus] = useState<'idle' | 'loading' | 'found' | 'not-found'>('idle');
   const [lookupAttempted, setLookupAttempted] = useState(false);
@@ -205,14 +204,15 @@ export function CreateEventForm() {
     setLookupAttempted(true);
     setLookupStatus('loading');
     setLookupError(null);
+    setLookupUserId(null);
 
     try {
-      const response = await fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/rsvp-by-phone', {
+      const response = await fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/submit-event-by-phone', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ phone: formData.submitter.phone }),
+        body: JSON.stringify({ action: 'lookup', phone: formData.submitter.phone }),
       });
 
       const data = await response.json();
@@ -221,38 +221,32 @@ export function CreateEventForm() {
         throw new Error(data?.error || 'Lookup failed');
       }
 
-      if (data?.found) {
+      if (data?.found && data.user) {
         setLookupStatus('found');
-        setMemberId(data.member_id || data.memberId || null);
-        setCreatedById(data.uuid || data.user_id || data.userId || null);
+        setLookupUserId(data.user.id || null);
 
-        const userDetails = data.user || data;
         setFormData(prev => ({
           ...prev,
           submitter: {
             ...prev.submitter,
-            name: userDetails.name || prev.submitter.name,
-            email: userDetails.email || prev.submitter.email,
+            name: data.user.name || prev.submitter.name,
+            email: data.user.email || prev.submitter.email,
             phone: formData.submitter.phone,
-            date_of_birth: userDetails.date_of_birth || userDetails.dateOfBirth || prev.submitter.date_of_birth,
-            street: userDetails.address || prev.submitter.street,
-            city: userDetails.city || prev.submitter.city,
-            state: userDetails.state || prev.submitter.state,
-            zip: userDetails.zip || userDetails.zip_code || prev.submitter.zip,
-            employer: userDetails.employer || prev.submitter.employer,
-            occupation: userDetails.occupation || prev.submitter.occupation,
+            date_of_birth: data.user.date_of_birth || prev.submitter.date_of_birth,
+            street: data.user.address || prev.submitter.street,
+            city: data.user.city || prev.submitter.city,
+            state: data.user.state || prev.submitter.state,
+            zip: data.user.zip || prev.submitter.zip,
+            employer: data.user.employer || prev.submitter.employer,
+            occupation: data.user.occupation || prev.submitter.occupation,
           },
         }));
       } else {
         setLookupStatus('not-found');
-        setMemberId(null);
-        setCreatedById(null);
       }
     } catch (error) {
       console.error('Lookup error', error);
       setLookupError('We could not verify this number. Please continue by sharing your details.');
-      setMemberId(null);
-      setCreatedById(null);
       setLookupStatus('not-found');
     }
   };
@@ -307,68 +301,59 @@ export function CreateEventForm() {
       }
 
       const isMultiple = formData.event.multiple_locations;
-      const submissionTimestamp = new Date();
-      const notes = `Submitted by ${formData.submitter.name || 'Unknown'} on ${submissionTimestamp.toLocaleString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      })} via the public Events website.`;
+      const [startDatePart, startTimePart] = formData.event.event_date
+        ? formData.event.event_date.split('T')
+        : ['', ''];
+      const endTimePart = formData.event.event_end_date ? formData.event.event_end_date.split('T')[1] : '';
 
-      const { data: newEvent, error: eventError } = await supabase
-        .from('events')
-        .insert({
-          title: formData.event.title,
-          description: formData.event.description || null,
-          event_date: new Date(formData.event.event_date).toISOString(),
-          event_end_date: formData.event.event_end_date ? new Date(formData.event.event_end_date).toISOString() : null,
-          event_type: formData.event.event_type || null,
-          event_consideration: formData.event.event_consideration || null,
-          location: isMultiple ? null : formData.event.location_name || null,
-          location_address: isMultiple ? null : formData.event.location_address || null,
-          location_one_name: isMultiple ? formData.event.location_name || null : null,
-          location_one_address: isMultiple ? formData.event.location_address || null : null,
-          location_two_name: isMultiple ? formData.event.location_two_name || null : null,
-          location_two_address: isMultiple ? formData.event.location_two_address || null : null,
-          location_three_name: isMultiple ? formData.event.location_three_name || null : null,
-          location_three_address: isMultiple ? formData.event.location_three_address || null : null,
-          multiple_locations: isMultiple,
-          rsvp_enabled: true,
-          checkin_enabled: false,
-          status: 'draft',
-          hide_address_before_rsvp: false,
-          created_by: createdById,
-          notes,
-          website_image: imageMetadata,
-        })
-        .select()
-        .single();
-
-      if (eventError || !newEvent) {
-        throw eventError || new Error('Unable to create event');
-      }
-
-      const { error: attendeeError } = await supabase.from('event_attendees').insert({
-        event_id: newEvent.id,
-        member_id: memberId,
-        guest_name: formData.submitter.name || null,
-        guest_email: formData.submitter.email || null,
-        guest_phone: formData.submitter.phone,
-        date_of_birth: formData.submitter.date_of_birth || null,
-        address: formData.submitter.street || null,
-        city: formData.submitter.city || null,
-        state: formData.submitter.state || null,
-        zip: formData.submitter.zip || null,
-        employer: formData.submitter.employer || null,
-        occupation: formData.submitter.occupation || null,
-        rsvp_status: 'attending',
-        guest_count: 0,
-        notes: 'Event submitter',
+      const response = await fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/submit-event-by-phone', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'submit',
+          eventData: {
+            title: formData.event.title,
+            description: formData.event.description || null,
+            event_type: formData.event.event_type || null,
+            event_consideration: formData.event.event_consideration || null,
+            date: startDatePart,
+            start_time: startTimePart ? `${startTimePart}:00` : null,
+            end_time: endTimePart ? `${endTimePart}:00` : null,
+            event_date: formData.event.event_date ? new Date(formData.event.event_date).toISOString() : null,
+            event_end_date: formData.event.event_end_date ? new Date(formData.event.event_end_date).toISOString() : null,
+            location: isMultiple ? null : formData.event.location_name || null,
+            location_address: isMultiple ? null : formData.event.location_address || null,
+            location_one_name: isMultiple ? formData.event.location_name || null : null,
+            location_one_address: isMultiple ? formData.event.location_address || null : null,
+            location_two_name: isMultiple ? formData.event.location_two_name || null : null,
+            location_two_address: isMultiple ? formData.event.location_two_address || null : null,
+            location_three_name: isMultiple ? formData.event.location_three_name || null : null,
+            location_three_address: isMultiple ? formData.event.location_three_address || null : null,
+            multiple_locations: isMultiple,
+            website_image: imageMetadata,
+          },
+          userData: {
+            id: lookupUserId,
+            name: formData.submitter.name,
+            email: formData.submitter.email || null,
+            phone: formData.submitter.phone,
+            date_of_birth: formData.submitter.date_of_birth || null,
+            address: formData.submitter.street || null,
+            city: formData.submitter.city || null,
+            state: formData.submitter.state || null,
+            zip: formData.submitter.zip || null,
+            employer: formData.submitter.employer || null,
+            occupation: formData.submitter.occupation || null,
+          },
+        }),
       });
 
-      if (attendeeError) {
-        throw attendeeError;
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || 'Unable to submit event');
       }
 
       setSuccessMessage('Your event was submitted! We will review the details soon.');
@@ -404,8 +389,7 @@ export function CreateEventForm() {
       }));
       setLookupAttempted(false);
       setLookupStatus('idle');
-      setMemberId(null);
-      setCreatedById(null);
+      setLookupUserId(null);
       setWebsiteImage(null);
       setFileUpload(null);
     } catch (error: any) {
