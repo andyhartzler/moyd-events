@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Lock, MapPin } from 'lucide-react';
 
 import { EventMap } from './EventMap';
@@ -31,6 +31,7 @@ export function MultiLocationMaps({
   posterElementId = 'event-poster-card',
 }: MultiLocationMapsProps) {
   const [calculatedHeight, setCalculatedHeight] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const fallbackHeight = useMemo(() => {
     const count = locations.length;
@@ -42,25 +43,31 @@ export function MultiLocationMaps({
   useEffect(() => {
     const computeHeight = () => {
       const poster = document.getElementById(posterElementId);
-      if (!poster || locations.length === 0) {
+      const container = containerRef.current;
+
+      if (!poster || !container || locations.length === 0) {
         setCalculatedHeight(null);
         return;
       }
 
       const posterHeight = poster.getBoundingClientRect().height;
+      const posterTop = poster.getBoundingClientRect().top;
+      const containerTop = container.getBoundingClientRect().top;
+
       if (!posterHeight || posterHeight <= 0) {
         setCalculatedHeight(null);
         return;
       }
 
+      const offsetFromPosterTop = containerTop - posterTop;
       const totalGap = GAP_BETWEEN_TILES * (locations.length - 1);
-      const available = posterHeight - totalGap;
+      const available = posterHeight - offsetFromPosterTop - totalGap;
       if (available <= 0) {
         setCalculatedHeight(null);
         return;
       }
 
-      const perTile = available / locations.length;
+      const perTile = Math.max(100, available / locations.length);
       setCalculatedHeight(perTile);
     };
 
@@ -74,6 +81,7 @@ export function MultiLocationMaps({
       const observer = new ResizeObserver(() => computeHeight());
       const poster = document.getElementById(posterElementId);
       if (poster) observer.observe(poster);
+      if (containerRef.current) observer.observe(containerRef.current);
       return () => observer.disconnect();
     }
 
@@ -84,7 +92,7 @@ export function MultiLocationMaps({
   const mapHeight = calculatedHeight ?? fallbackHeight;
 
   return (
-    <div className="flex flex-col gap-4 lg:h-full">
+    <div className="flex flex-col gap-4 lg:h-full" ref={containerRef}>
       {locations.map((loc, index) => (
         <div
           key={`${loc.name}-${index}`}
