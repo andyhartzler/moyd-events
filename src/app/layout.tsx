@@ -48,7 +48,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.className} style={{ backgroundColor: '#273351' }}>
-        {/* MapKit JS with libraries */}
+        {/* MapKit JS */}
         <Script
           id="mapkit-js"
           strategy="afterInteractive"
@@ -56,9 +56,8 @@ export default function RootLayout({
             __html: `
               (function() {
                 var script = document.createElement('script');
-                script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js';
+                script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js';
                 script.crossOrigin = 'anonymous';
-                script.setAttribute('data-libraries', 'map,services,annotations');
                 script.async = true;
                 document.head.appendChild(script);
               })();
@@ -240,7 +239,7 @@ export default function RootLayout({
             target="_blank"
             rel="noopener noreferrer"
             className="scrolling-banner block overflow-hidden py-4 relative"
-            style={{ backgroundColor: '#43792C' }}
+            style={{ background: 'linear-gradient(90deg, #5B9FBD 0%, #273351 100%)' }}
           >
             <div className="marquee-container">
               <div className="marquee-content">
