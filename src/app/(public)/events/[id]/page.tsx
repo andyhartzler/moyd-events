@@ -20,11 +20,13 @@ function getStorageImageUrl(image: Event['website_image'] | Event['social_share_
 
   // Handle array of images - return first image
   if (Array.isArray(image)) {
-    return image.length > 0 ? image[0].storage_url : null;
+    if (image.length === 0) return null;
+    const firstImage = image[0];
+    return firstImage.url || firstImage.storage_url || null;
   }
 
-  // Handle single image
-  return image.storage_url || null;
+  // Handle single image - support both new and legacy field names
+  return image.url || image.storage_url || null;
 }
 
 // Helper to get all populated locations for multi-location events
@@ -193,9 +195,10 @@ export default async function EventDetailPage({
   if (!hasRSVPd && user) {
     const { data: rsvp } = await supabase
       .from('event_attendees')
-      .select('id')
+      .select('id, rsvp_status')
       .eq('event_id', event.id)
       .eq('member_id', user.id)
+      .eq('rsvp_status', 'attending')
       .single();
 
     hasRSVPd = !!rsvp;

@@ -44,13 +44,14 @@ export function useRSVP() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error: deleteError } = await supabase
+      // Update rsvp_status to 'not_attending' instead of deleting
+      const { error: updateError } = await supabase
         .from('event_attendees')
-        .delete()
+        .update({ rsvp_status: 'not_attending' })
         .eq('event_id', eventId)
         .eq('member_id', user.id);
 
-      if (deleteError) throw deleteError;
+      if (updateError) throw updateError;
 
       return true;
     } catch (err: any) {
