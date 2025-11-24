@@ -67,14 +67,17 @@ export function useRSVP() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Update rsvp_status to 'not_attending' instead of deleting
+      // Mark RSVP as canceled instead of deleting the record
       const { error: updateError } = await supabase
         .from('event_attendees')
-        .update({ rsvp_status: 'not_attending' })
+        .update({ rsvp_status: 'canceled' })
         .eq('event_id', eventId)
         .eq('member_id', user.id);
 
       if (updateError) throw updateError;
+
+      // Clear RSVP cookie so the event page doesn't treat the user as attending after canceling
+      document.cookie = `rsvp_${eventId}=false; path=/; max-age=0; SameSite=Lax`;
 
       return true;
     } catch (err: any) {

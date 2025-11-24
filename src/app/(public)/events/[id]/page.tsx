@@ -184,24 +184,25 @@ export default async function EventDetailPage({
   const { data: { user } } = await supabase.auth.getUser();
   let hasRSVPd = false;
 
-  // Check for RSVP cookie (set when guest registers)
-  const cookieStore = cookies();
-  const rsvpCookie = cookieStore.get(`rsvp_${event.id}`);
-  if (rsvpCookie?.value === 'true') {
-    hasRSVPd = true;
-  }
-
-  // Also check authenticated user's RSVPs
-  if (!hasRSVPd && user) {
+  // Check authenticated user's RSVP status first so canceled RSVPs don't get overridden by cookies
+  if (user) {
     const { data: rsvp } = await supabase
       .from('event_attendees')
       .select('id, rsvp_status')
       .eq('event_id', event.id)
       .eq('member_id', user.id)
-      .eq('rsvp_status', 'attending')
-      .single();
+      .maybeSingle();
 
-    hasRSVPd = !!rsvp;
+    hasRSVPd = rsvp?.rsvp_status === 'attending';
+  }
+
+  // Check for RSVP cookie (set when guest registers) only if no confirmed RSVP via auth
+  if (!hasRSVPd) {
+    const cookieStore = cookies();
+    const rsvpCookie = cookieStore.get(`rsvp_${event.id}`);
+    if (rsvpCookie?.value === 'true') {
+      hasRSVPd = true;
+    }
   }
 
   // Get attendee count from the event record (updated automatically by trigger)
