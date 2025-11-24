@@ -201,7 +201,7 @@ export default async function EventDetailPage({
     : 0;
 
   // Check if address should be hidden (hide_address_before_rsvp is true AND user hasn't RSVPd)
-  const shouldHideAddress = event.hide_address_before_rsvp && !hasRSVPd;
+  const shouldHideAddress = Boolean(event.hide_address_before_rsvp && !hasRSVPd);
 
   // Get locations for multi-location events
   const isMultiLocation = event.multiple_locations === true;
