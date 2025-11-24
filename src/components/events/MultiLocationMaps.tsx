@@ -21,6 +21,9 @@ interface MultiLocationMapsProps {
 }
 
 const GAP_BETWEEN_TILES = 16; // Tailwind gap-4
+const TILE_PADDING = 32; // p-4 = 16px top + 16px bottom
+const TILE_TITLE_HEIGHT = 40; // Approximate height of title + margin
+const TILE_CHROME = TILE_PADDING + TILE_TITLE_HEIGHT; // Total non-map height per tile
 
 export function MultiLocationMaps({
   locations,
@@ -67,8 +70,11 @@ export function MultiLocationMaps({
         return;
       }
 
-      const perTile = Math.max(100, available / locations.length);
-      setCalculatedHeight(perTile);
+      // Calculate height per tile card, then subtract padding and title height
+      // to get the actual map height
+      const heightPerTileCard = available / locations.length;
+      const mapHeight = Math.max(100, heightPerTileCard - TILE_CHROME);
+      setCalculatedHeight(mapHeight);
     };
 
     computeHeight();
