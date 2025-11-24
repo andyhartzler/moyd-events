@@ -116,14 +116,13 @@ export function EventsPageClient({ upcomingEvents, pastEvents, allEvents }: Even
               <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-8 text-center">
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">Create an Event</h3>
                 <p className="text-gray-700 mb-6">
-                  Have an event to share? Submit the details below and we&rsquo;ll save it as a draft on the
-                  events page.
+                  Share the details of your event below, and we&apos;ll contact you if we need more information.
                 </p>
                 <Link
                   href="/events/create"
                   className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all shadow-md"
                 >
-                  Start Event Form
+                  Submit Your Event
                 </Link>
               </div>
             </div>

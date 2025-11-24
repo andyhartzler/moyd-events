@@ -125,6 +125,7 @@ export function CreateEventForm() {
     secondary: [],
     tertiary: [],
   });
+  const [submitterSuggestions, setSubmitterSuggestions] = useState<LocationSuggestion[]>([]);
   const googlePlacesReady = useRef(false);
   const googleScriptLoading = useRef(false);
   const autocompleteService = useRef<any>(null);
@@ -184,6 +185,25 @@ export function CreateEventForm() {
     return address.replace(/,?\s*United States$/i, '').trim();
   };
 
+  const parseAddressComponents = (components: any[] = []) => {
+    const getComponent = (type: string) => components.find(component => component.types?.includes(type));
+
+    const streetNumber = getComponent('street_number')?.long_name || '';
+    const route = getComponent('route')?.long_name || '';
+    const city =
+      getComponent('locality')?.long_name ||
+      getComponent('sublocality')?.long_name ||
+      getComponent('administrative_area_level_3')?.long_name ||
+      getComponent('administrative_area_level_2')?.long_name ||
+      '';
+    const state = getComponent('administrative_area_level_1')?.short_name || '';
+    const zip = getComponent('postal_code')?.long_name || '';
+
+    const street = [streetNumber, route].filter(Boolean).join(' ').trim();
+
+    return { street, city, state, zip };
+  };
+
   const handleEventChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, type, value } = e.target;
     const fieldValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
@@ -198,6 +218,10 @@ export function CreateEventForm() {
 
   const handleSubmitterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (name === 'street') {
+      handleSubmitterAddressSearch(value);
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       submitter: {
@@ -306,6 +330,83 @@ export function CreateEventForm() {
     }
 
     finalizeSelection(suggestion.title, suggestion.address);
+  };
+
+  const handleSubmitterAddressSearch = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      submitter: {
+        ...prev.submitter,
+        street: value,
+      },
+    }));
+
+    if (!googlePlacesReady.current || !autocompleteService.current || !value) {
+      setSubmitterSuggestions([]);
+      return;
+    }
+
+    autocompleteService.current.getPlacePredictions(
+      {
+        input: value,
+        componentRestrictions: { country: 'us' },
+      },
+      (predictions: GoogleAutocompletePrediction[] = [], status: string) => {
+        if (status !== 'OK' || !predictions?.length) {
+          setSubmitterSuggestions([]);
+          return;
+        }
+
+        const mapped = predictions.slice(0, 5).map(prediction => ({
+          title: prediction.structured_formatting?.main_text || prediction.description || value,
+          subtitle: prediction.structured_formatting?.secondary_text,
+          address: stripCountry(prediction.description || value),
+          placeId: prediction.place_id,
+        }));
+
+        setSubmitterSuggestions(mapped);
+      }
+    );
+  };
+
+  const handleSubmitterSuggestionSelect = (suggestion: LocationSuggestion) => {
+    const google = (typeof window !== 'undefined' ? (window as any).google : null) as any;
+
+    const finalize = (street: string, city?: string, state?: string, zip?: string) => {
+      setFormData(prev => ({
+        ...prev,
+        submitter: {
+          ...prev.submitter,
+          street: street || prev.submitter.street,
+          city: city || prev.submitter.city,
+          state: state || prev.submitter.state,
+          zip: zip || prev.submitter.zip,
+        },
+      }));
+      setSubmitterSuggestions([]);
+    };
+
+    if (google && placesService.current && suggestion.placeId) {
+      placesService.current.getDetails(
+        {
+          placeId: suggestion.placeId,
+          fields: ['formatted_address', 'address_components'],
+        },
+        (place: any, status: string) => {
+          if (status === 'OK' && place) {
+            const { street, city, state, zip } = parseAddressComponents(place.address_components || []);
+            const streetValue = street || stripCountry(place.formatted_address || suggestion.address);
+            finalize(streetValue, city, state, zip);
+            return;
+          }
+
+          finalize(suggestion.address, undefined, undefined, undefined);
+        }
+      );
+      return;
+    }
+
+    finalize(suggestion.address, undefined, undefined, undefined);
   };
 
   const handleLookup = async () => {
@@ -469,6 +570,7 @@ export function CreateEventForm() {
             description: formData.event.description || null,
             event_type: formData.event.event_type || null,
             event_consideration: formData.event.event_consideration || null,
+            status: 'draft',
             event_date: eventDateIso,
             event_end_date: eventEndDateIso,
             ...locationPayload,
@@ -872,15 +974,34 @@ export function CreateEventForm() {
                 className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <label className="block text-sm font-semibold text-gray-700">Street address</label>
-              <input
-                type="text"
-                name="street"
-                value={formData.submitter.street}
-                onChange={handleSubmitterChange}
-                className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+              <div className="relative">
+                <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  name="street"
+                  value={formData.submitter.street}
+                  onChange={handleSubmitterChange}
+                  placeholder="Start typing to search your address"
+                  className="w-full rounded-lg border-2 border-gray-200 px-10 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              {submitterSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                  {submitterSuggestions.map((suggestion, idx) => (
+                    <button
+                      key={`${suggestion.title}-${idx}`}
+                      type="button"
+                      onClick={() => handleSubmitterSuggestionSelect(suggestion)}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                    >
+                      <div className="font-semibold text-gray-900">{suggestion.title}</div>
+                      <div className="text-sm text-gray-600">{suggestion.address}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">City</label>
@@ -952,7 +1073,7 @@ export function CreateEventForm() {
           className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:opacity-90 disabled:opacity-60"
         >
           {(submitting || uploadingImage) && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-          Submit Event for Review
+          Submit Your Event
         </button>
       </div>
     </form>
