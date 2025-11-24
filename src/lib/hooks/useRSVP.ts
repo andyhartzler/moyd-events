@@ -16,16 +16,39 @@ export function useRSVP() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Please log in to RSVP');
 
-      const { error: rsvpError } = await supabase
+      // Check if user already has a record (e.g., from previous cancellation)
+      const { data: existingRsvp } = await supabase
         .from('event_attendees')
-        .upsert({
-          event_id: eventId,
-          member_id: user.id,
-          rsvp_status: 'attending',
-          guest_count: guestCount,
-        });
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('member_id', user.id)
+        .single();
 
-      if (rsvpError) throw rsvpError;
+      if (existingRsvp) {
+        // Update existing record to 'attending'
+        const { error: updateError } = await supabase
+          .from('event_attendees')
+          .update({
+            rsvp_status: 'attending',
+            guest_count: guestCount,
+          })
+          .eq('event_id', eventId)
+          .eq('member_id', user.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('event_attendees')
+          .insert({
+            event_id: eventId,
+            member_id: user.id,
+            rsvp_status: 'attending',
+            guest_count: guestCount,
+          });
+
+        if (insertError) throw insertError;
+      }
 
       return true;
     } catch (err: any) {
