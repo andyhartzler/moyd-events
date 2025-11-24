@@ -5,6 +5,7 @@ import { EventCard } from '@/components/events/EventCard';
 import { EventCalendar } from '@/components/calendar/EventCalendar';
 import { MobileEventCalendar } from '@/components/calendar/MobileEventCalendar';
 import { SubscribeButton } from '@/components/events/SubscribeButton';
+import Link from 'next/link';
 import { Calendar, List } from 'lucide-react';
 import type { EventWithRSVP } from '@/types/database.types';
 
@@ -109,6 +110,23 @@ export function EventsPageClient({ upcomingEvents, pastEvents, allEvents }: Even
                 </div>
               </div>
             )}
+
+            {/* Create Event CTA */}
+            <div className="mt-16 max-w-4xl mx-auto">
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-8 text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Create an Event</h3>
+                <p className="text-gray-700 mb-6">
+                  Have an event to share? Submit the details below and we&rsquo;ll save it as a draft on the
+                  events page.
+                </p>
+                <Link
+                  href="/events/create"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all shadow-md"
+                >
+                  Start Event Form
+                </Link>
+              </div>
+            </div>
           </>
         )}
       </div>
