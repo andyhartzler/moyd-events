@@ -137,12 +137,13 @@ export function CreateEventForm() {
   };
 
   const handleEventChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, type, value } = e.target;
+    const fieldValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
     setFormData(prev => ({
       ...prev,
       event: {
         ...prev.event,
-        [name]: type === 'checkbox' ? checked : value,
+        [name]: fieldValue,
       },
     }));
   };
