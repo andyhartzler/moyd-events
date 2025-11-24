@@ -58,7 +58,7 @@ export default function RootLayout({
                 var script = document.createElement('script');
                 script.src = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js';
                 script.crossOrigin = 'anonymous';
-                script.setAttribute('data-libraries', 'map,services,annotations');
+                script.setAttribute('data-libraries', 'map,services,annotations,search');
                 script.async = true;
                 document.head.appendChild(script);
               })();

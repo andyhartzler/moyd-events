@@ -29,6 +29,7 @@ interface EventForm {
     event_date: string;
     event_end_date: string;
     event_type: string;
+    event_consideration: string;
     location_name: string;
     location_address: string;
     location_two_name: string;
@@ -61,6 +62,7 @@ export function CreateEventForm() {
       event_date: '',
       event_end_date: '',
       event_type: '',
+      event_consideration: '',
       location_name: '',
       location_address: '',
       location_two_name: '',
@@ -85,6 +87,7 @@ export function CreateEventForm() {
 
   const [memberId, setMemberId] = useState<string | null>(null);
   const [createdById, setCreatedById] = useState<string | null>(null);
+  const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupStatus, setLookupStatus] = useState<'idle' | 'loading' | 'found' | 'not-found'>('idle');
   const [lookupAttempted, setLookupAttempted] = useState(false);
 
@@ -120,9 +123,11 @@ export function CreateEventForm() {
         window.mapkit._initialized = true;
       }
 
-      searchAutocomplete.current = new window.mapkit.SearchAutocomplete();
-      setMapkitReady(true);
-      clearInterval(interval);
+      if (window.mapkit.SearchAutocomplete) {
+        searchAutocomplete.current = new window.mapkit.SearchAutocomplete();
+        setMapkitReady(true);
+        clearInterval(interval);
+      }
     };
 
     interval = setInterval(initializeMapkit, 400);
@@ -199,6 +204,7 @@ export function CreateEventForm() {
 
     setLookupAttempted(true);
     setLookupStatus('loading');
+    setLookupError(null);
 
     try {
       const response = await fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/rsvp-by-phone', {
@@ -210,6 +216,10 @@ export function CreateEventForm() {
       });
 
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Lookup failed');
+      }
 
       if (data?.found) {
         setLookupStatus('found');
@@ -235,9 +245,14 @@ export function CreateEventForm() {
         }));
       } else {
         setLookupStatus('not-found');
+        setMemberId(null);
+        setCreatedById(null);
       }
     } catch (error) {
       console.error('Lookup error', error);
+      setLookupError('We could not verify this number. Please continue by sharing your details.');
+      setMemberId(null);
+      setCreatedById(null);
       setLookupStatus('not-found');
     }
   };
@@ -309,6 +324,7 @@ export function CreateEventForm() {
           event_date: new Date(formData.event.event_date).toISOString(),
           event_end_date: formData.event.event_end_date ? new Date(formData.event.event_end_date).toISOString() : null,
           event_type: formData.event.event_type || null,
+          event_consideration: formData.event.event_consideration || null,
           location: isMultiple ? null : formData.event.location_name || null,
           location_address: isMultiple ? null : formData.event.location_address || null,
           location_one_name: isMultiple ? formData.event.location_name || null : null,
@@ -355,7 +371,7 @@ export function CreateEventForm() {
         throw attendeeError;
       }
 
-      setSuccessMessage('Your event was saved as a draft! We will review the details soon.');
+      setSuccessMessage('Your event was submitted! We will review the details soon.');
       setFormData(prev => ({
         event: {
           ...prev.event,
@@ -364,6 +380,7 @@ export function CreateEventForm() {
           event_date: '',
           event_end_date: '',
           event_type: '',
+          event_consideration: '',
           location_name: '',
           location_address: '',
           location_two_name: '',
@@ -406,6 +423,23 @@ export function CreateEventForm() {
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">Event details</h2>
           <p className="text-gray-600">Provide the information we need to publish your event.</p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            How would you like Missouri Young Democrats to participate in this event?
+          </label>
+          <select
+            name="event_consideration"
+            value={formData.event.event_consideration}
+            onChange={handleEventChange}
+            className="w-full rounded-lg border-2 border-gray-200 px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Select an option</option>
+            <option value="Promote on website">To help promote the event on our website</option>
+            <option value="Share with members">To share the event with our members</option>
+            <option value="Co-host">Co-host the event</option>
+          </select>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -559,7 +593,6 @@ export function CreateEventForm() {
             </label>
             {fileUpload && <span className="text-sm text-gray-700">{fileUpload.name}</span>}
           </div>
-          <p className="text-sm text-gray-500">We&rsquo;ll store this in our events bucket and attach it to your draft.</p>
         </div>
       </section>
 
@@ -598,6 +631,10 @@ export function CreateEventForm() {
             )}
           </button>
         </div>
+
+        {lookupError && (
+          <p className="text-sm text-red-600">{lookupError}</p>
+        )}
 
         {(lookupAttempted || lookupStatus === 'found') && (
           <div className="grid md:grid-cols-2 gap-6">
@@ -713,7 +750,7 @@ export function CreateEventForm() {
           className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:opacity-90 disabled:opacity-60"
         >
           {(submitting || uploadingImage) && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-          Submit event draft
+          Submit Event for Review
         </button>
       </div>
     </form>

@@ -3,7 +3,7 @@ import { CreateEventForm } from '@/components/events/CreateEventForm';
 
 export const metadata: Metadata = {
   title: 'Create an Event - Missouri Young Democrats',
-  description: 'Submit an event to be added as a draft to the events page.',
+  description: 'Share your event so we can help spread the word.',
 };
 
 export default function CreateEventPage() {
@@ -14,8 +14,7 @@ export default function CreateEventPage() {
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-3">Create an Event</h1>
             <p className="text-gray-700 max-w-2xl mx-auto">
-              Share the details of your event below. We&rsquo;ll save it as a draft on the events page and contact you
-              if we need more information.
+              Share the details of your event below, and we&rsquo;ll contact you if we need more information.
             </p>
           </div>
           <CreateEventForm />
