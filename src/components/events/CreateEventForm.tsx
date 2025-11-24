@@ -19,6 +19,20 @@ type GoogleAutocompletePrediction = {
   structured_formatting?: { main_text?: string; secondary_text?: string };
 };
 
+const sanitizeFilename = (filename: string) => {
+  const lastDotIndex = filename.lastIndexOf('.');
+  const name = filename.substring(0, lastDotIndex);
+  const extension = filename.substring(lastDotIndex);
+
+  const sanitized = name
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]/g, '')
+    .replace(/\-+/g, '-')
+    .toLowerCase();
+
+  return `${sanitized}${extension.toLowerCase()}`;
+};
+
 const locationFieldMap: Record<
   LocationKey,
   { nameKey: keyof EventForm['event']; addressKey: keyof EventForm['event'] }
@@ -26,6 +40,15 @@ const locationFieldMap: Record<
   primary: { nameKey: 'location_name', addressKey: 'location_address' },
   secondary: { nameKey: 'location_two_name', addressKey: 'location_two_address' },
   tertiary: { nameKey: 'location_three_name', addressKey: 'location_three_address' },
+};
+
+type WebsiteImageMetadata = {
+  url: string;
+  path: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  uploadedAt: string;
 };
 
 interface EventForm {
@@ -106,9 +129,9 @@ export function CreateEventForm() {
   const autocompleteService = useRef<any>(null);
   const placesService = useRef<any>(null);
 
-  const [fileUpload, setFileUpload] = useState<File | null>(null);
+  const [fileUploads, setFileUploads] = useState<File[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [websiteImage, setWebsiteImage] = useState<any | null>(null);
+  const [websiteImages, setWebsiteImages] = useState<WebsiteImageMetadata[] | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -180,6 +203,38 @@ export function CreateEventForm() {
         [name]: value,
       },
     }));
+  };
+
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (!files.length) return;
+
+    setFileUploads(prev => {
+      const existing = new Set(prev.map(file => `${file.name}-${file.lastModified}`));
+      const merged = [...prev];
+
+      files.forEach(file => {
+        const key = `${file.name}-${file.lastModified}`;
+        if (!existing.has(key)) {
+          merged.push(file);
+          existing.add(key);
+        }
+      });
+
+      return merged;
+    });
+
+    setWebsiteImages(null);
+    e.target.value = '';
+  };
+
+  const removePendingFile = (index: number) => {
+    setFileUploads(prev => prev.filter((_, i) => i !== index));
+    setWebsiteImages(null);
+  };
+
+  const removeUploadedImage = (index: number) => {
+    setWebsiteImages(prev => (prev ? prev.filter((_, i) => i !== index) : prev));
   };
 
   const handleLocationSearch = (key: LocationKey, value: string) => {
@@ -304,30 +359,47 @@ export function CreateEventForm() {
     }
   };
 
-  const uploadWebsiteImage = async () => {
-    if (!fileUpload) return null;
+  const uploadWebsiteImages = async () => {
+    if (!fileUploads.length) return null;
     setUploadingImage(true);
-    const filePath = `event-submissions/${Date.now()}-${fileUpload.name}`;
 
-    const { error: uploadError } = await supabase.storage.from('events').upload(filePath, fileUpload);
-    if (uploadError) {
-      throw uploadError;
+    const metadataList: WebsiteImageMetadata[] = [];
+    const errors: string[] = [];
+
+    for (const file of fileUploads) {
+      try {
+        const sanitizedName = sanitizeFilename(file.name);
+        const filePath = `event-submissions/${Date.now()}-${sanitizedName}`;
+
+        const { error: uploadError } = await supabase.storage.from('events').upload(filePath, file);
+        if (uploadError) {
+          errors.push(`Failed to upload ${file.name}`);
+          continue;
+        }
+
+        const { data: publicUrlData } = supabase.storage.from('events').getPublicUrl(filePath);
+
+        metadataList.push({
+          url: publicUrlData?.publicUrl || '',
+          path: filePath,
+          filename: sanitizedName,
+          size: file.size,
+          mimeType: file.type,
+          uploadedAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        errors.push(`Failed to upload ${file.name}`);
+      }
     }
 
-    const { data: publicUrlData } = supabase.storage.from('events').getPublicUrl(filePath);
+    if (errors.length) {
+      console.error(errors.join('; '));
+      setErrorMessage('Some images could not be uploaded. Please review and try again.');
+    }
 
-    const metadata = {
-      file_name: fileUpload.name,
-      storage_url: publicUrlData?.publicUrl || '',
-      uploaded_at: new Date().toISOString(),
-      content_type: fileUpload.type,
-      storage_path: filePath,
-      storage_bucket: 'events',
-    };
-
-    setWebsiteImage(metadata);
+    setWebsiteImages(metadataList);
     setUploadingImage(false);
-    return metadata;
+    return metadataList;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -348,9 +420,9 @@ export function CreateEventForm() {
     setSubmitting(true);
 
     try {
-      let imageMetadata = websiteImage;
-      if (fileUpload && !websiteImage) {
-        imageMetadata = await uploadWebsiteImage();
+      let imageMetadata = websiteImages;
+      if (fileUploads.length && !websiteImages) {
+        imageMetadata = await uploadWebsiteImages();
       }
 
       const isMultiple = formData.event.multiple_locations;
@@ -358,6 +430,30 @@ export function CreateEventForm() {
       const eventEndDateIso = formData.event.event_end_date
         ? new Date(formData.event.event_end_date).toISOString()
         : null;
+
+      const locationPayload = isMultiple
+        ? {
+            multiple_locations: true,
+            location: null,
+            location_address: null,
+            location_one_name: formData.event.location_name || null,
+            location_one_address: formData.event.location_address || null,
+            location_two_name: formData.event.location_two_name || null,
+            location_two_address: formData.event.location_two_address || null,
+            location_three_name: formData.event.location_three_name || null,
+            location_three_address: formData.event.location_three_address || null,
+          }
+        : {
+            multiple_locations: false,
+            location: formData.event.location_name || null,
+            location_address: formData.event.location_address || null,
+            location_one_name: null,
+            location_one_address: null,
+            location_two_name: null,
+            location_two_address: null,
+            location_three_name: null,
+            location_three_address: null,
+          };
 
       const response = await fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/submit-event-by-phone', {
         method: 'POST',
@@ -373,16 +469,8 @@ export function CreateEventForm() {
             event_consideration: formData.event.event_consideration || null,
             event_date: eventDateIso,
             event_end_date: eventEndDateIso,
-            location: isMultiple ? null : formData.event.location_name || null,
-            location_address: isMultiple ? null : formData.event.location_address || null,
-            location_one_name: isMultiple ? formData.event.location_name || null : null,
-            location_one_address: isMultiple ? formData.event.location_address || null : null,
-            location_two_name: isMultiple ? formData.event.location_two_name || null : null,
-            location_two_address: isMultiple ? formData.event.location_two_address || null : null,
-            location_three_name: isMultiple ? formData.event.location_three_name || null : null,
-            location_three_address: isMultiple ? formData.event.location_three_address || null : null,
-            multiple_locations: isMultiple,
-            website_image: imageMetadata,
+            ...locationPayload,
+            website_image: imageMetadata?.length ? imageMetadata : null,
           },
           userData: {
             id: lookupUserId,
@@ -440,8 +528,8 @@ export function CreateEventForm() {
       setLookupAttempted(false);
       setLookupStatus('idle');
       setLookupUserId(null);
-      setWebsiteImage(null);
-      setFileUpload(null);
+      setWebsiteImages(null);
+      setFileUploads([]);
     } catch (error: any) {
       console.error('Event submission error', error);
       setErrorMessage('Something went wrong while submitting your event. Please try again.');
@@ -621,11 +709,54 @@ export function CreateEventForm() {
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
-                onChange={e => setFileUpload(e.target.files?.[0] || null)}
+                onChange={handleFileSelection}
               />
             </label>
-            {fileUpload && <span className="text-sm text-gray-700">{fileUpload.name}</span>}
+            {(fileUploads.length > 0 || websiteImages?.length) && (
+              <div className="space-y-2 text-sm text-gray-700 w-full">
+                {fileUploads.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="font-semibold text-gray-800">Pending uploads</p>
+                    {fileUploads.map((file, index) => (
+                      <div key={`${file.name}-${file.lastModified}`} className="flex items-center gap-2">
+                        <span className="truncate" title={file.name}>
+                          {file.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removePendingFile(index)}
+                          className="text-primary hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {websiteImages?.length ? (
+                  <div className="space-y-1">
+                    <p className="font-semibold text-gray-800">Uploaded images</p>
+                    {websiteImages.map((image, index) => (
+                      <div key={image.path} className="flex items-center gap-2">
+                        <span className="truncate" title={image.filename}>
+                          {image.filename}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeUploadedImage(index)}
+                          className="text-primary hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
       </section>
