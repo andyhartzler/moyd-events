@@ -239,7 +239,7 @@ export default function RootLayout({
             target="_blank"
             rel="noopener noreferrer"
             className="scrolling-banner block overflow-hidden py-4 relative"
-            style={{ backgroundColor: '#43792C' }}
+            style={{ background: 'linear-gradient(90deg, #5B9FBD 0%, #273351 100%)' }}
           >
             <div className="marquee-container">
               <div className="marquee-content">

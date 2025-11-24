@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, MapPin, Upload } from 'lucide-react';
@@ -135,6 +136,7 @@ export function CreateEventForm() {
 
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [submittedName, setSubmittedName] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -494,7 +496,11 @@ export function CreateEventForm() {
         throw new Error(result?.error || 'Unable to submit event');
       }
 
-      setSuccessMessage('Your event was submitted! We will review the details soon.');
+      const thanksName = formData.submitter.name?.trim() || 'there';
+      setSubmittedName(thanksName);
+      setSuccessMessage(
+        `Thank you, ${thanksName}! We’ll be in touch within 48 hours to confirm our participation in the event.`
+      );
       setFormData(prev => ({
         event: {
           ...prev.event,
@@ -538,6 +544,37 @@ export function CreateEventForm() {
       setUploadingImage(false);
     }
   };
+
+  if (successMessage) {
+    return (
+      <div className="space-y-6 text-center">
+        <div className="p-6 bg-green-50 border border-green-200 rounded-xl">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            {`Thank you, ${submittedName ?? 'there'}!`}
+          </h2>
+          <p className="text-gray-700">{successMessage}</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center px-6 py-3 bg-primary text-white rounded-lg font-semibold shadow-md hover:opacity-90"
+          >
+            Back to events
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setSuccessMessage(null);
+              setSubmittedName(null);
+            }}
+            className="inline-flex items-center justify-center px-6 py-3 border-2 border-primary text-primary rounded-lg font-semibold hover:bg-primary/10"
+          >
+            Submit another event
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-10">
