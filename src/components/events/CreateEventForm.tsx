@@ -114,7 +114,7 @@ export function CreateEventForm() {
         if (!token) return;
 
         window.mapkit.init({
-          authorizationCallback: done => done(token),
+          authorizationCallback: (done: (token: string) => void) => done(token),
           language: 'en',
         });
         window.mapkit._initialized = true;
