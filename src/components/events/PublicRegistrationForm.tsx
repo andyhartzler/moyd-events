@@ -365,8 +365,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
       </div>
 
       {/* City, State, ZIP */}
-      <div className="grid grid-cols-6 gap-4">
-        <div className="col-span-3">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-4">
+        <div className="col-span-2 sm:col-span-3">
           <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
             City{isFundraiser ? ' *' : ''}
           </label>
@@ -385,7 +385,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
           {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
         </div>
 
-        <div className="col-span-1">
+        <div className="col-span-1 sm:col-span-1">
           <label htmlFor="state" className="block text-sm font-semibold text-gray-700 mb-2">
             State{isFundraiser ? ' *' : ''}
           </label>
@@ -453,7 +453,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
           {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state}</p>}
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <label htmlFor="zip_code" className="block text-sm font-semibold text-gray-700 mb-2">
             ZIP Code *
           </label>
