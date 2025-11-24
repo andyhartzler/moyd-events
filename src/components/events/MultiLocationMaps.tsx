@@ -21,7 +21,6 @@ interface MultiLocationMapsProps {
 }
 
 const GAP_BETWEEN_TILES = 16; // Tailwind gap-4
-const MIN_TILE_HEIGHT = 120;
 
 export function MultiLocationMaps({
   locations,
@@ -35,9 +34,9 @@ export function MultiLocationMaps({
 
   const fallbackHeight = useMemo(() => {
     const count = locations.length;
-    if (count <= 1) return 200;
-    if (count === 2) return 150;
-    return 125;
+    if (count <= 1) return 160;
+    if (count === 2) return 130;
+    return 110;
   }, [locations.length]);
 
   useEffect(() => {
@@ -62,7 +61,7 @@ export function MultiLocationMaps({
       }
 
       const perTile = available / locations.length;
-      setCalculatedHeight(Math.max(MIN_TILE_HEIGHT, perTile));
+      setCalculatedHeight(perTile);
     };
 
     computeHeight();
@@ -110,7 +109,7 @@ export function MultiLocationMaps({
           </h2>
 
           <div
-            className="relative min-h-[120px]"
+            className="relative"
             style={mapHeight ? { height: `${mapHeight}px` } : undefined}
           >
             <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
