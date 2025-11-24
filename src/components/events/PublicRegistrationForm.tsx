@@ -161,7 +161,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
             phone: formData.phone,
             date_of_birth: formData.date_of_birth,
             address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip_code}`,
-            employer: formData.employer || null,
+            employed: formData.employer || null,
             industry: formData.occupation || null,
             date_joined: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
             referral_source: eventName,
@@ -190,34 +190,54 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
         }
       }
 
-      // Step 2: ALWAYS create event_attendees record
-      // Always populate guest fields (even when member_id exists)
+      // Step 2: Upsert donor record with occupation and employer
+      const { error: donorError } = await supabase
+        .from('donors')
+        .upsert(
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip_code,
+            occupation: formData.occupation || null,
+            employer: formData.employer || null,
+          },
+          { onConflict: 'email' }
+        );
+
+      if (donorError) throw donorError;
+
+      // Step 3: ALWAYS create or update event_attendees record
+      const attendeePayload = {
+        event_id: eventId,
+        member_id: memberId, // Will be null for non-members
+        guest_name: formData.name, // Always set
+        guest_email: formData.email, // Always set
+        guest_phone: formData.phone, // Always set
+        date_of_birth: formData.date_of_birth,
+        address: formData.street,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip_code,
+        employer: formData.employer || null,
+        occupation: formData.occupation || null,
+        rsvp_status: 'attending',
+        guest_count: 0,
+        checked_in: false,
+      };
+
       const { error: attendeeError } = await supabase
         .from('event_attendees')
-        .insert({
-          event_id: eventId,
-          member_id: memberId, // Will be null for non-members
-          guest_name: formData.name, // Always set
-          guest_email: formData.email, // Always set
-          guest_phone: formData.phone, // Always set
-          date_of_birth: formData.date_of_birth,
-          address: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip_code,
-          employer: formData.employer || null,
-          occupation: formData.occupation || null,
-          rsvp_status: 'attending',
-          guest_count: 0,
-          checked_in: false,
-        });
+        .upsert(attendeePayload, { onConflict: 'event_id,member_id' });
 
       if (attendeeError) throw attendeeError;
 
-      // Step 3: Set cookie to remember this RSVP for address reveal
+      // Step 4: Set cookie to remember this RSVP for address reveal
       document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
 
-      // Step 4: Show success
+      // Step 5: Show success
       setSuccess(true);
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -365,8 +385,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
       </div>
 
       {/* City, State, ZIP */}
-      <div className="grid grid-cols-6 gap-4">
-        <div className="col-span-3">
+      <div className="space-y-4 sm:grid sm:grid-cols-6 sm:gap-4 sm:space-y-0">
+        <div className="sm:col-span-3">
           <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
             City{isFundraiser ? ' *' : ''}
           </label>
@@ -385,92 +405,94 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
           {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
         </div>
 
-        <div className="col-span-1">
-          <label htmlFor="state" className="block text-sm font-semibold text-gray-700 mb-2">
-            State{isFundraiser ? ' *' : ''}
-          </label>
-          <select
-            id="state"
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
-              errors.state ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
-            }`}
-            disabled={loading}
-          >
-            <option value="AL">AL</option>
-            <option value="AK">AK</option>
-            <option value="AZ">AZ</option>
-            <option value="AR">AR</option>
-            <option value="CA">CA</option>
-            <option value="CO">CO</option>
-            <option value="CT">CT</option>
-            <option value="DE">DE</option>
-            <option value="FL">FL</option>
-            <option value="GA">GA</option>
-            <option value="HI">HI</option>
-            <option value="ID">ID</option>
-            <option value="IL">IL</option>
-            <option value="IN">IN</option>
-            <option value="IA">IA</option>
-            <option value="KS">KS</option>
-            <option value="KY">KY</option>
-            <option value="LA">LA</option>
-            <option value="ME">ME</option>
-            <option value="MD">MD</option>
-            <option value="MA">MA</option>
-            <option value="MI">MI</option>
-            <option value="MN">MN</option>
-            <option value="MS">MS</option>
-            <option value="MO">MO</option>
-            <option value="MT">MT</option>
-            <option value="NE">NE</option>
-            <option value="NV">NV</option>
-            <option value="NH">NH</option>
-            <option value="NJ">NJ</option>
-            <option value="NM">NM</option>
-            <option value="NY">NY</option>
-            <option value="NC">NC</option>
-            <option value="ND">ND</option>
-            <option value="OH">OH</option>
-            <option value="OK">OK</option>
-            <option value="OR">OR</option>
-            <option value="PA">PA</option>
-            <option value="RI">RI</option>
-            <option value="SC">SC</option>
-            <option value="SD">SD</option>
-            <option value="TN">TN</option>
-            <option value="TX">TX</option>
-            <option value="UT">UT</option>
-            <option value="VT">VT</option>
-            <option value="VA">VA</option>
-            <option value="WA">WA</option>
-            <option value="WV">WV</option>
-            <option value="WI">WI</option>
-            <option value="WY">WY</option>
-          </select>
-          {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state}</p>}
-        </div>
+        <div className="grid grid-cols-2 gap-4 sm:col-span-3 sm:grid-cols-3">
+          <div className="col-span-1 sm:col-span-1">
+            <label htmlFor="state" className="block text-sm font-semibold text-gray-700 mb-2">
+              State{isFundraiser ? ' *' : ''}
+            </label>
+            <select
+              id="state"
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
+              className={`w-full min-w-[5.5rem] sm:min-w-[6.5rem] px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
+                errors.state ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+              }`}
+              disabled={loading}
+            >
+              <option value="AL">AL</option>
+              <option value="AK">AK</option>
+              <option value="AZ">AZ</option>
+              <option value="AR">AR</option>
+              <option value="CA">CA</option>
+              <option value="CO">CO</option>
+              <option value="CT">CT</option>
+              <option value="DE">DE</option>
+              <option value="FL">FL</option>
+              <option value="GA">GA</option>
+              <option value="HI">HI</option>
+              <option value="ID">ID</option>
+              <option value="IL">IL</option>
+              <option value="IN">IN</option>
+              <option value="IA">IA</option>
+              <option value="KS">KS</option>
+              <option value="KY">KY</option>
+              <option value="LA">LA</option>
+              <option value="ME">ME</option>
+              <option value="MD">MD</option>
+              <option value="MA">MA</option>
+              <option value="MI">MI</option>
+              <option value="MN">MN</option>
+              <option value="MS">MS</option>
+              <option value="MO">MO</option>
+              <option value="MT">MT</option>
+              <option value="NE">NE</option>
+              <option value="NV">NV</option>
+              <option value="NH">NH</option>
+              <option value="NJ">NJ</option>
+              <option value="NM">NM</option>
+              <option value="NY">NY</option>
+              <option value="NC">NC</option>
+              <option value="ND">ND</option>
+              <option value="OH">OH</option>
+              <option value="OK">OK</option>
+              <option value="OR">OR</option>
+              <option value="PA">PA</option>
+              <option value="RI">RI</option>
+              <option value="SC">SC</option>
+              <option value="SD">SD</option>
+              <option value="TN">TN</option>
+              <option value="TX">TX</option>
+              <option value="UT">UT</option>
+              <option value="VT">VT</option>
+              <option value="VA">VA</option>
+              <option value="WA">WA</option>
+              <option value="WV">WV</option>
+              <option value="WI">WI</option>
+              <option value="WY">WY</option>
+            </select>
+            {errors.state && <p className="mt-1 text-sm text-red-600">{errors.state}</p>}
+          </div>
 
-        <div className="col-span-2">
-          <label htmlFor="zip_code" className="block text-sm font-semibold text-gray-700 mb-2">
-            ZIP Code *
-          </label>
-          <input
-            type="text"
-            id="zip_code"
-            name="zip_code"
-            value={formData.zip_code}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
-              errors.zip_code ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
-            }`}
-            disabled={loading}
-            placeholder=""
-            maxLength={10}
-          />
-          {errors.zip_code && <p className="mt-1 text-sm text-red-600">{errors.zip_code}</p>}
+          <div className="col-span-1 sm:col-span-2">
+            <label htmlFor="zip_code" className="block text-sm font-semibold text-gray-700 mb-2">
+              ZIP Code *
+            </label>
+            <input
+              type="text"
+              id="zip_code"
+              name="zip_code"
+              value={formData.zip_code}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
+                errors.zip_code ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+              }`}
+              disabled={loading}
+              placeholder=""
+              maxLength={10}
+            />
+            {errors.zip_code && <p className="mt-1 text-sm text-red-600">{errors.zip_code}</p>}
+          </div>
         </div>
       </div>
 
@@ -494,27 +516,25 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
         {errors.employer && <p className="mt-1 text-sm text-red-600">{errors.employer}</p>}
       </div>
 
-      {/* Occupation - only show for fundraisers */}
-      {isFundraiser && (
-        <div>
-          <label htmlFor="occupation" className="block text-sm font-semibold text-gray-700 mb-2">
-            Occupation *
-          </label>
-          <input
-            type="text"
-            id="occupation"
-            name="occupation"
-            value={formData.occupation}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
-              errors.occupation ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
-            }`}
-            disabled={loading}
-            placeholder=""
-          />
-          {errors.occupation && <p className="mt-1 text-sm text-red-600">{errors.occupation}</p>}
-        </div>
-      )}
+      {/* Occupation */}
+      <div>
+        <label htmlFor="occupation" className="block text-sm font-semibold text-gray-700 mb-2">
+          Occupation{isFundraiser ? ' *' : ''}
+        </label>
+        <input
+          type="text"
+          id="occupation"
+          name="occupation"
+          value={formData.occupation}
+          onChange={handleChange}
+          className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
+            errors.occupation ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+          }`}
+          disabled={loading}
+          placeholder=""
+        />
+        {errors.occupation && <p className="mt-1 text-sm text-red-600">{errors.occupation}</p>}
+      </div>
 
       {/* Error Message */}
       {error && (
