@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, MapPin, Upload } from 'lucide-react';
-import { zonedTimeToUtc } from 'date-fns-tz';
+import { fromZonedTime } from 'date-fns-tz';
 
 type LocationSuggestion = {
   title: string;
@@ -532,10 +532,10 @@ export function CreateEventForm() {
       const isMultiple = formData.event.multiple_locations;
       // Convert datetime-local input (assumed to be Central Time) to UTC for storage
       const eventDateIso = formData.event.event_date
-        ? zonedTimeToUtc(formData.event.event_date, 'America/Chicago').toISOString()
+        ? fromZonedTime(formData.event.event_date, 'America/Chicago').toISOString()
         : null;
       const eventEndDateIso = formData.event.event_end_date
-        ? zonedTimeToUtc(formData.event.event_end_date, 'America/Chicago').toISOString()
+        ? fromZonedTime(formData.event.event_end_date, 'America/Chicago').toISOString()
         : null;
 
       const locationPayload = isMultiple
