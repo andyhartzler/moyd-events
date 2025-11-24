@@ -745,7 +745,7 @@ export function CreateEventForm() {
           />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 min-w-0">
           <div className="space-y-2 min-w-0">
             <label className="block text-sm font-semibold text-gray-700">
               Start date & time * <span className="text-xs font-normal text-gray-500">(Central Time)</span>
@@ -796,12 +796,12 @@ export function CreateEventForm() {
             if (!showField) return null;
 
             return (
-              <div key={key} className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2 relative">
+              <div key={key} className="grid md:grid-cols-2 gap-4 min-w-0">
+                <div className="space-y-2 relative min-w-0">
                   <label className="block text-sm font-semibold text-gray-700">
                     {isPrimary ? 'Location name' : `Location ${key === 'secondary' ? '2' : '3'} name`}
                   </label>
-                  <div className="relative">
+                  <div className="relative min-w-0">
                     <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
@@ -809,7 +809,7 @@ export function CreateEventForm() {
                       value={formData.event[nameKey] as string}
                       onChange={e => handleLocationSearch(key, e.target.value)}
                       placeholder="Search location"
-                      className="w-full rounded-lg border-2 border-gray-200 px-10 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="w-full min-w-0 max-w-full rounded-lg border-2 border-gray-200 px-10 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                   {suggestions[key].length > 0 && (
