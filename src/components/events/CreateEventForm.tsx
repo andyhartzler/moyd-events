@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, MapPin, Upload } from 'lucide-react';
+import { zonedTimeToUtc } from 'date-fns-tz';
 
 type LocationSuggestion = {
   title: string;
@@ -529,9 +530,12 @@ export function CreateEventForm() {
       }
 
       const isMultiple = formData.event.multiple_locations;
-      const eventDateIso = formData.event.event_date ? new Date(formData.event.event_date).toISOString() : null;
+      // Convert datetime-local input (assumed to be Central Time) to UTC for storage
+      const eventDateIso = formData.event.event_date
+        ? zonedTimeToUtc(formData.event.event_date, 'America/Chicago').toISOString()
+        : null;
       const eventEndDateIso = formData.event.event_end_date
-        ? new Date(formData.event.event_end_date).toISOString()
+        ? zonedTimeToUtc(formData.event.event_end_date, 'America/Chicago').toISOString()
         : null;
 
       const locationPayload = isMultiple
@@ -601,7 +605,7 @@ export function CreateEventForm() {
       const thanksName = formData.submitter.name?.trim() || 'there';
       setSubmittedName(thanksName);
       setSuccessMessage(
-        `Thank you, ${thanksName}! We’ll be in touch within 48 hours to confirm our participation in the event.`
+        "We'll be in touch within 48 hours to confirm our participation in the event."
       );
       setFormData(prev => ({
         event: {
@@ -743,7 +747,9 @@ export function CreateEventForm() {
 
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">Start date & time *</label>
+            <label className="block text-sm font-semibold text-gray-700">
+              Start date & time * <span className="text-xs font-normal text-gray-500">(Central Time)</span>
+            </label>
             <input
               type="datetime-local"
               name="event_date"
@@ -754,7 +760,9 @@ export function CreateEventForm() {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">End date & time</label>
+            <label className="block text-sm font-semibold text-gray-700">
+              End date & time <span className="text-xs font-normal text-gray-500">(Central Time)</span>
+            </label>
             <input
               type="datetime-local"
               name="event_end_date"
