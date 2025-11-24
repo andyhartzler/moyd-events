@@ -601,7 +601,7 @@ export function CreateEventForm() {
       const thanksName = formData.submitter.name?.trim() || 'there';
       setSubmittedName(thanksName);
       setSuccessMessage(
-        `Thank you, ${thanksName}! We’ll be in touch within 48 hours to confirm our participation in the event.`
+        "We'll be in touch within 48 hours to confirm our participation in the event."
       );
       setFormData(prev => ({
         event: {
