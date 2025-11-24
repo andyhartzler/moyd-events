@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { getMapKitToken } from '@/lib/utils/mapkit';
 import { Loader2, MapPin, Upload } from 'lucide-react';
 
 type LocationSuggestion = {
@@ -12,6 +11,11 @@ type LocationSuggestion = {
 };
 
 type LocationKey = 'primary' | 'secondary' | 'tertiary';
+
+type GoogleAutocompletePrediction = {
+  description: string;
+  structured_formatting?: { main_text?: string; secondary_text?: string };
+};
 
 const locationFieldMap: Record<
   LocationKey,
@@ -95,8 +99,9 @@ export function CreateEventForm() {
     secondary: [],
     tertiary: [],
   });
-  const searchAutocomplete = useRef<any>(null);
-  const [mapkitReady, setMapkitReady] = useState(false);
+  const googlePlacesReady = useRef(false);
+  const googleScriptLoading = useRef(false);
+  const autocompleteService = useRef<any>(null);
 
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -107,46 +112,43 @@ export function CreateEventForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    const initializeGooglePlaces = () => {
+      if (typeof window === 'undefined') return;
 
-    const initializeMapkit = async () => {
-      if (typeof window === 'undefined' || !('mapkit' in window)) return;
-
-      const mk = window.mapkit as typeof window.mapkit & { _initialized?: boolean };
-      if (!mk || typeof mk.init !== 'function') return;
-
-      if (!mk?._initialized) {
-        const token = getMapKitToken();
-        if (!token) return;
-
-        mk.init({
-          authorizationCallback: (done: (token: string) => void) => done(token),
-          language: 'en',
-        });
-        mk._initialized = true;
+      const google = (window as any).google;
+      if (google?.maps?.places) {
+        autocompleteService.current = new google.maps.places.AutocompleteService();
+        googlePlacesReady.current = true;
+        return true;
       }
 
-      if (typeof mk.importLibrary === 'function') {
-        try {
-          await mk.importLibrary('search');
-        } catch (e) {
-          console.error('Failed to load MapKit search library', e);
-          return;
-        }
-      }
-
-      if (typeof mk.SearchAutocomplete === 'function') {
-        searchAutocomplete.current = new mk.SearchAutocomplete();
-        setMapkitReady(true);
-        clearInterval(interval);
-      }
+      return false;
     };
 
-    interval = setInterval(initializeMapkit, 400);
+    if (initializeGooglePlaces()) return;
 
-    return () => {
-      clearInterval(interval);
+    if (googleScriptLoading.current) return;
+    googleScriptLoading.current = true;
+
+    const existingScript = document.querySelector('script[data-google-places]') as HTMLScriptElement | null;
+
+    const script = existingScript || document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyCM0aqoZkzdjfrMNezyDGFqGMaf7gK4z8Y'
+    }&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.dataset.googlePlaces = 'true';
+    script.onload = () => initializeGooglePlaces();
+    script.onerror = () => {
+      googlePlacesReady.current = false;
+      googleScriptLoading.current = false;
+      console.error('Failed to load Google Places library');
     };
+
+    if (!existingScript) {
+      document.body.appendChild(script);
+    }
   }, []);
 
   const stripCountry = (address: string) => {
@@ -179,29 +181,31 @@ export function CreateEventForm() {
   const handleLocationSearch = (key: LocationKey, value: string) => {
     handleEventChange({ target: { name: locationFieldMap[key].nameKey, value } } as any);
 
-    if (
-      !mapkitReady ||
-      !searchAutocomplete.current ||
-      typeof searchAutocomplete.current.search !== 'function' ||
-      !value
-    ) {
+    if (!googlePlacesReady.current || !autocompleteService.current || !value) {
       setSuggestions(prev => ({ ...prev, [key]: [] }));
       return;
     }
 
-    searchAutocomplete.current.search(value, (error: any, data: any) => {
-      if (error || !data?.results) return;
-      const mapped = data.results.slice(0, 5).map((result: any) => {
-        const displayLines = result.displayLines || [];
-        const formatted = stripCountry(displayLines.join(', '));
-        return {
-          title: result.title || value,
-          subtitle: result.subtitle,
-          address: formatted || value,
-        } as LocationSuggestion;
-      });
-      setSuggestions(prev => ({ ...prev, [key]: mapped }));
-    });
+    autocompleteService.current.getPlacePredictions(
+      {
+        input: value,
+        componentRestrictions: { country: 'us' },
+      },
+      (predictions: GoogleAutocompletePrediction[] = [], status: string) => {
+        if (status !== 'OK' || !predictions?.length) {
+          setSuggestions(prev => ({ ...prev, [key]: [] }));
+          return;
+        }
+
+        const mapped = predictions.slice(0, 5).map(prediction => ({
+          title: prediction.structured_formatting?.main_text || prediction.description || value,
+          subtitle: prediction.structured_formatting?.secondary_text,
+          address: stripCountry(prediction.description || value),
+        }));
+
+        setSuggestions(prev => ({ ...prev, [key]: mapped }));
+      }
+    );
   };
 
   const handleSuggestionSelect = (key: LocationKey, suggestion: LocationSuggestion) => {
