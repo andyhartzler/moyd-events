@@ -14,8 +14,16 @@ import { parseEventSlug } from '@/lib/utils/slugify';
 import { Event } from '@/types/database.types';
 
 // Helper function to get Supabase storage URL for an image
+// If multiple images, returns the first one
 function getStorageImageUrl(image: Event['website_image'] | Event['social_share_image']): string | null {
   if (!image) return null;
+
+  // Handle array of images - return first image
+  if (Array.isArray(image)) {
+    return image.length > 0 ? image[0].storage_url : null;
+  }
+
+  // Handle single image
   return image.storage_url || null;
 }
 

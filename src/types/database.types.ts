@@ -32,8 +32,8 @@ export interface Event {
   created_by: string | null;
   created_at: string;
   updated_at: string;
-  website_image: StorageImage | null;
-  social_share_image: StorageImage | null;
+  website_image: StorageImage | StorageImage[] | null;
+  social_share_image: StorageImage | StorageImage[] | null;
   hide_address_before_rsvp: boolean | null;
   multiple_locations: boolean | null;
   location_one_name: string | null;
