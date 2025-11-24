@@ -109,7 +109,7 @@ export function CreateEventForm() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    const initializeMapkit = () => {
+    const initializeMapkit = async () => {
       if (typeof window === 'undefined' || !('mapkit' in window)) return;
 
       const mk = window.mapkit as typeof window.mapkit & { _initialized?: boolean };
@@ -124,6 +124,15 @@ export function CreateEventForm() {
           language: 'en',
         });
         mk._initialized = true;
+      }
+
+      if (typeof mk.importLibrary === 'function') {
+        try {
+          await mk.importLibrary('search');
+        } catch (e) {
+          console.error('Failed to load MapKit search library', e);
+          return;
+        }
       }
 
       if (typeof mk.SearchAutocomplete === 'function') {
