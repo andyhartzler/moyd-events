@@ -67,15 +67,19 @@ export function MultiLocationMaps({
 
     computeHeight();
 
-    if ('ResizeObserver' in window) {
+    const resizeTarget: any = typeof window !== 'undefined' ? window : null;
+
+    if (!resizeTarget) return undefined;
+
+    if ('ResizeObserver' in resizeTarget) {
       const observer = new ResizeObserver(() => computeHeight());
       const poster = document.getElementById(posterElementId);
       if (poster) observer.observe(poster);
       return () => observer.disconnect();
     }
 
-    window.addEventListener('resize', computeHeight);
-    return () => window.removeEventListener('resize', computeHeight);
+    resizeTarget.addEventListener('resize', computeHeight);
+    return () => resizeTarget.removeEventListener('resize', computeHeight);
   }, [locations.length, posterElementId]);
 
   const mapHeight = calculatedHeight ?? fallbackHeight;
