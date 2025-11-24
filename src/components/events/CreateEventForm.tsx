@@ -111,19 +111,23 @@ export function CreateEventForm() {
 
     const initializeMapkit = () => {
       if (typeof window === 'undefined' || !('mapkit' in window)) return;
-      if (!window.mapkit?._initialized) {
+
+      const mk = window.mapkit as typeof window.mapkit & { _initialized?: boolean };
+      if (!mk || typeof mk.init !== 'function') return;
+
+      if (!mk?._initialized) {
         const token = getMapKitToken();
         if (!token) return;
 
-        window.mapkit.init({
+        mk.init({
           authorizationCallback: (done: (token: string) => void) => done(token),
           language: 'en',
         });
-        window.mapkit._initialized = true;
+        mk._initialized = true;
       }
 
-      if (window.mapkit.SearchAutocomplete) {
-        searchAutocomplete.current = new window.mapkit.SearchAutocomplete();
+      if (typeof mk.SearchAutocomplete === 'function') {
+        searchAutocomplete.current = new mk.SearchAutocomplete();
         setMapkitReady(true);
         clearInterval(interval);
       }
@@ -166,7 +170,12 @@ export function CreateEventForm() {
   const handleLocationSearch = (key: LocationKey, value: string) => {
     handleEventChange({ target: { name: locationFieldMap[key].nameKey, value } } as any);
 
-    if (!mapkitReady || !searchAutocomplete.current || !value) {
+    if (
+      !mapkitReady ||
+      !searchAutocomplete.current ||
+      typeof searchAutocomplete.current.search !== 'function' ||
+      !value
+    ) {
       setSuggestions(prev => ({ ...prev, [key]: [] }));
       return;
     }
@@ -301,10 +310,10 @@ export function CreateEventForm() {
       }
 
       const isMultiple = formData.event.multiple_locations;
-      const [startDatePart, startTimePart] = formData.event.event_date
-        ? formData.event.event_date.split('T')
-        : ['', ''];
-      const endTimePart = formData.event.event_end_date ? formData.event.event_end_date.split('T')[1] : '';
+      const eventDateIso = formData.event.event_date ? new Date(formData.event.event_date).toISOString() : null;
+      const eventEndDateIso = formData.event.event_end_date
+        ? new Date(formData.event.event_end_date).toISOString()
+        : null;
 
       const response = await fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/submit-event-by-phone', {
         method: 'POST',
@@ -318,11 +327,8 @@ export function CreateEventForm() {
             description: formData.event.description || null,
             event_type: formData.event.event_type || null,
             event_consideration: formData.event.event_consideration || null,
-            date: startDatePart,
-            start_time: startTimePart ? `${startTimePart}:00` : null,
-            end_time: endTimePart ? `${endTimePart}:00` : null,
-            event_date: formData.event.event_date ? new Date(formData.event.event_date).toISOString() : null,
-            event_end_date: formData.event.event_end_date ? new Date(formData.event.event_end_date).toISOString() : null,
+            event_date: eventDateIso,
+            event_end_date: eventEndDateIso,
             location: isMultiple ? null : formData.event.location_name || null,
             location_address: isMultiple ? null : formData.event.location_address || null,
             location_one_name: isMultiple ? formData.event.location_name || null : null,
