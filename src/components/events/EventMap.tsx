@@ -187,14 +187,14 @@ export function EventMap({ location, locationAddress, eventTitle }: EventMapProp
 
   if (error) {
     return (
-      <div className="w-full h-full min-h-[120px] rounded-xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
+      <div className="w-full h-full rounded-xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
         <p className="text-gray-600">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-full min-h-[120px]">
+    <div className="relative w-full h-full">
       {isLoading && (
         <div className="absolute inset-0 rounded-xl bg-gray-100 flex items-center justify-center z-10">
           <div className="text-gray-600">Loading map...</div>

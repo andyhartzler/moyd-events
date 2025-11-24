@@ -12,6 +12,13 @@ export function EventCard({ event }: EventCardProps) {
   const status = getEventStatus(event.event_date);
   const eventSlug = generateEventSlug(event.title, event.event_date);
 
+  const displayLocation = event.multiple_locations
+    ? event.location
+      || event.location_one_name
+      || event.location_two_name
+      || event.location_three_name
+    : event.location;
+
   const getEventTypeColor = (type: string | null) => {
     switch (type) {
       case 'meeting':
@@ -62,10 +69,10 @@ export function EventCard({ event }: EventCardProps) {
             </div>
           </div>
 
-          {event.location && (
+          {displayLocation && (
             <div className="flex items-start space-x-3 text-gray-700">
               <MapPin className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-              <span className="text-sm font-medium">{event.location}</span>
+              <span className="text-sm font-medium">{displayLocation}</span>
             </div>
           )}
         </div>
