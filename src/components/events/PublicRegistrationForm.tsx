@@ -161,7 +161,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
             phone: formData.phone,
             date_of_birth: formData.date_of_birth,
             address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip_code}`,
-            employer: formData.employer || null,
+            employed: formData.employer || null,
             industry: formData.occupation || null,
             date_joined: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
             referral_source: eventName,
@@ -190,34 +190,54 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
         }
       }
 
-      // Step 2: ALWAYS create event_attendees record
-      // Always populate guest fields (even when member_id exists)
+      // Step 2: Upsert donor record with occupation and employer
+      const { error: donorError } = await supabase
+        .from('donors')
+        .upsert(
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip_code,
+            occupation: formData.occupation || null,
+            employer: formData.employer || null,
+          },
+          { onConflict: 'email' }
+        );
+
+      if (donorError) throw donorError;
+
+      // Step 3: ALWAYS create or update event_attendees record
+      const attendeePayload = {
+        event_id: eventId,
+        member_id: memberId, // Will be null for non-members
+        guest_name: formData.name, // Always set
+        guest_email: formData.email, // Always set
+        guest_phone: formData.phone, // Always set
+        date_of_birth: formData.date_of_birth,
+        address: formData.street,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip_code,
+        employer: formData.employer || null,
+        occupation: formData.occupation || null,
+        rsvp_status: 'attending',
+        guest_count: 0,
+        checked_in: false,
+      };
+
       const { error: attendeeError } = await supabase
         .from('event_attendees')
-        .insert({
-          event_id: eventId,
-          member_id: memberId, // Will be null for non-members
-          guest_name: formData.name, // Always set
-          guest_email: formData.email, // Always set
-          guest_phone: formData.phone, // Always set
-          date_of_birth: formData.date_of_birth,
-          address: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip_code,
-          employer: formData.employer || null,
-          occupation: formData.occupation || null,
-          rsvp_status: 'attending',
-          guest_count: 0,
-          checked_in: false,
-        });
+        .upsert(attendeePayload, { onConflict: 'event_id,member_id' });
 
       if (attendeeError) throw attendeeError;
 
-      // Step 3: Set cookie to remember this RSVP for address reveal
+      // Step 4: Set cookie to remember this RSVP for address reveal
       document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
 
-      // Step 4: Show success
+      // Step 5: Show success
       setSuccess(true);
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -395,7 +415,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
               name="state"
               value={formData.state}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
+              className={`w-full min-w-[5.5rem] sm:min-w-[6.5rem] px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
                 errors.state ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
               }`}
               disabled={loading}
@@ -496,27 +516,25 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
         {errors.employer && <p className="mt-1 text-sm text-red-600">{errors.employer}</p>}
       </div>
 
-      {/* Occupation - only show for fundraisers */}
-      {isFundraiser && (
-        <div>
-          <label htmlFor="occupation" className="block text-sm font-semibold text-gray-700 mb-2">
-            Occupation *
-          </label>
-          <input
-            type="text"
-            id="occupation"
-            name="occupation"
-            value={formData.occupation}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
-              errors.occupation ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
-            }`}
-            disabled={loading}
-            placeholder=""
-          />
-          {errors.occupation && <p className="mt-1 text-sm text-red-600">{errors.occupation}</p>}
-        </div>
-      )}
+      {/* Occupation */}
+      <div>
+        <label htmlFor="occupation" className="block text-sm font-semibold text-gray-700 mb-2">
+          Occupation{isFundraiser ? ' *' : ''}
+        </label>
+        <input
+          type="text"
+          id="occupation"
+          name="occupation"
+          value={formData.occupation}
+          onChange={handleChange}
+          className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
+            errors.occupation ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
+          }`}
+          disabled={loading}
+          placeholder=""
+        />
+        {errors.occupation && <p className="mt-1 text-sm text-red-600">{errors.occupation}</p>}
+      </div>
 
       {/* Error Message */}
       {error && (
