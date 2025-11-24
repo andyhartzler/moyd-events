@@ -8,12 +8,14 @@ type LocationSuggestion = {
   title: string;
   subtitle?: string;
   address: string;
+  placeId?: string;
 };
 
 type LocationKey = 'primary' | 'secondary' | 'tertiary';
 
 type GoogleAutocompletePrediction = {
   description: string;
+  place_id?: string;
   structured_formatting?: { main_text?: string; secondary_text?: string };
 };
 
@@ -102,6 +104,7 @@ export function CreateEventForm() {
   const googlePlacesReady = useRef(false);
   const googleScriptLoading = useRef(false);
   const autocompleteService = useRef<any>(null);
+  const placesService = useRef<any>(null);
 
   const [fileUpload, setFileUpload] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -118,6 +121,7 @@ export function CreateEventForm() {
       const google = (window as any).google;
       if (google?.maps?.places) {
         autocompleteService.current = new google.maps.places.AutocompleteService();
+        placesService.current = new google.maps.places.PlacesService(document.createElement('div'));
         googlePlacesReady.current = true;
         return true;
       }
@@ -201,6 +205,7 @@ export function CreateEventForm() {
           title: prediction.structured_formatting?.main_text || prediction.description || value,
           subtitle: prediction.structured_formatting?.secondary_text,
           address: stripCountry(prediction.description || value),
+          placeId: prediction.place_id,
         }));
 
         setSuggestions(prev => ({ ...prev, [key]: mapped }));
@@ -209,15 +214,41 @@ export function CreateEventForm() {
   };
 
   const handleSuggestionSelect = (key: LocationKey, suggestion: LocationSuggestion) => {
-    setFormData(prev => ({
-      ...prev,
-      event: {
-        ...prev.event,
-        [locationFieldMap[key].nameKey]: suggestion.title,
-        [locationFieldMap[key].addressKey]: suggestion.address,
-      },
-    }));
-    setSuggestions(prev => ({ ...prev, [key]: [] }));
+    const finalizeSelection = (name: string, address: string) => {
+      setFormData(prev => ({
+        ...prev,
+        event: {
+          ...prev.event,
+          [locationFieldMap[key].nameKey]: name,
+          [locationFieldMap[key].addressKey]: address,
+        },
+      }));
+      setSuggestions(prev => ({ ...prev, [key]: [] }));
+    };
+
+    const google = (typeof window !== 'undefined' ? (window as any).google : null) as any;
+
+    if (google && placesService.current && suggestion.placeId) {
+      placesService.current.getDetails(
+        {
+          placeId: suggestion.placeId,
+          fields: ['name', 'formatted_address'],
+        },
+        (place: any, status: string) => {
+          if (status === 'OK' && place) {
+            const address = stripCountry(place.formatted_address || suggestion.address);
+            const title = place.name || suggestion.title;
+            finalizeSelection(title, address);
+            return;
+          }
+
+          finalizeSelection(suggestion.title, suggestion.address);
+        }
+      );
+      return;
+    }
+
+    finalizeSelection(suggestion.title, suggestion.address);
   };
 
   const handleLookup = async () => {
