@@ -78,7 +78,8 @@ export function useRSVP() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const storedGuestEmail = getCookieValue(`rsvp_${eventId}_email`);
+      const storedGuestPhone = getCookieValue(`rsvp_${eventId}_phone`);
 
       // Mark RSVP as canceled instead of deleting the record
       const { error: updateError } = await supabase
@@ -87,10 +88,23 @@ export function useRSVP() {
         .eq('event_id', eventId)
         .or(buildRSVPMatchingFilters(user));
 
-      if (updateError) throw updateError;
+        const { data: updatedRecords, error: updateError } = await supabase
+          .from('event_attendees')
+          .update({ rsvp_status: 'canceled' })
+          .eq('event_id', eventId)
+          .or(guestFilters.join(','))
+          .select('id');
+
+        if (updateError) throw updateError;
+        if (!updatedRecords || updatedRecords.length === 0) {
+          throw new Error('No RSVP found for the provided email or phone number.');
+        }
+      }
 
       // Clear RSVP cookie so the event page doesn't treat the user as attending after canceling
       document.cookie = `rsvp_${eventId}=false; path=/; max-age=0; SameSite=Lax`;
+      document.cookie = `rsvp_${eventId}_phone=; path=/; max-age=0; SameSite=Lax`;
+      document.cookie = `rsvp_${eventId}_email=; path=/; max-age=0; SameSite=Lax`;
 
       return true;
     } catch (err: any) {
