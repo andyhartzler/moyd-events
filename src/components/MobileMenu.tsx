@@ -6,6 +6,15 @@ import Link from 'next/link';
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
 
+  const navLinkStyle = {
+    fontFamily: 'Montserrat, sans-serif',
+    fontStyle: 'normal',
+    fontWeight: 800,
+    fontSize: 'clamp(26px, 7vw, 32px)',
+    letterSpacing: '-0.07em',
+    lineHeight: 1.25,
+  };
+
   return (
     <>
       {/* Hamburger Button */}
@@ -34,81 +43,51 @@ export function MobileMenu() {
           className="fixed inset-0 bg-[#273351] z-40 flex items-center justify-center"
           onClick={() => setIsOpen(false)}
         >
-          <nav className="flex flex-col items-center space-y-8">
+          <nav className="flex flex-col items-center" style={{ gap: '3vw' }}>
             <Link
               href="https://moyoungdemocrats.org/our-team"
-              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
-              style={{
-                fontFamily: 'Montserrat',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
-              }}
+              className="text-white hover:text-white/80 transition-colors uppercase"
+              style={navLinkStyle}
               onClick={() => setIsOpen(false)}
             >
               OUR TEAM
             </Link>
             <Link
               href="https://moyoungdemocrats.org/chapters"
-              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
-              style={{
-                fontFamily: 'Montserrat',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
-              }}
+              className="text-white hover:text-white/80 transition-colors uppercase"
+              style={navLinkStyle}
               onClick={() => setIsOpen(false)}
             >
               CHAPTERS
             </Link>
             <Link
               href="https://moyoungdemocrats.org/about"
-              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
-              style={{
-                fontFamily: 'Montserrat',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
-              }}
+              className="text-white hover:text-white/80 transition-colors uppercase"
+              style={navLinkStyle}
               onClick={() => setIsOpen(false)}
             >
               ABOUT
             </Link>
             <Link
               href="https://moyoungdemocrats.org/donate"
-              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
-              style={{
-                fontFamily: 'Montserrat',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
-              }}
+              className="text-white hover:text-white/80 transition-colors uppercase"
+              style={navLinkStyle}
               onClick={() => setIsOpen(false)}
             >
               DONATE
             </Link>
             <Link
               href="https://moyoungdemocrats.org/contact"
-              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
-              style={{
-                fontFamily: 'Montserrat',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
-              }}
+              className="text-white hover:text-white/80 transition-colors uppercase"
+              style={navLinkStyle}
               onClick={() => setIsOpen(false)}
             >
               CONTACT
             </Link>
             <Link
               href="https://moyoungdemocrats.org/members"
-              className="text-white hover:text-white/80 transition-colors uppercase font-bold"
-              style={{
-                fontFamily: 'Montserrat',
-                fontWeight: 800,
-                fontSize: '1.1rem',
-                letterSpacing: '-0.07em'
-              }}
+              className="text-white hover:text-white/80 transition-colors uppercase"
+              style={navLinkStyle}
               onClick={() => setIsOpen(false)}
             >
               MEMBERS
