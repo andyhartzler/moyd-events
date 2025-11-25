@@ -297,13 +297,6 @@ export default async function EventDetailPage({
                 event.rsvp_enabled && (
                   <div>
                     <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} eventDate={event.event_date} />
-                    {hasRSVPd && (
-                      <div className="p-4 bg-green-600/20 border border-green-400/40 rounded-lg mt-4">
-                        <p className="text-sm text-green-200 font-medium text-center">
-                          ✓ You're registered for this event!
-                        </p>
-                      </div>
-                    )}
                   </div>
                 )
               )}
