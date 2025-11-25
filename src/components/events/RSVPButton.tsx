@@ -14,7 +14,7 @@ interface RSVPButtonProps {
 
 export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPButtonProps) {
   const [hasRSVPd, setHasRSVPd] = useState(initialRSVP);
-  const { rsvp, cancelRSVP, loading, error } = useRSVP();
+  const { rsvp, loading, error } = useRSVP();
   const router = useRouter();
   const supabase = createClient();
 
@@ -40,17 +40,14 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
     }
 
     if (hasRSVPd) {
-      const success = await cancelRSVP(eventId);
-      if (success) {
-        setHasRSVPd(false);
-        router.refresh();
-      }
-    } else {
-      const success = await rsvp(eventId);
-      if (success) {
-        setHasRSVPd(true);
-        router.refresh();
-      }
+      setError("You're already RSVP'd for this event.");
+      return;
+    }
+
+    const success = await rsvp(eventId);
+    if (success) {
+      setHasRSVPd(true);
+      router.refresh();
     }
   };
 
@@ -58,12 +55,12 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
     <div>
       <Button
         onClick={handleRSVP}
-        disabled={loading}
         variant={hasRSVPd ? 'outline' : 'default'}
         size="lg"
         className="w-full text-lg py-6 h-14"
+        disabled={loading || hasRSVPd}
       >
-        {loading ? 'Loading...' : hasRSVPd ? 'Cancel RSVP' : 'RSVP Now'}
+        {loading ? 'Loading...' : hasRSVPd ? "You're already RSVP'd" : 'RSVP Now'}
       </Button>
       {error && (
         <p className="text-sm text-red-600 mt-2">{error}</p>
