@@ -1,7 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
+
+function buildRSVPMatchingFilters(user: User) {
+  const filters = [
+    `member_id.eq.${user.id}`,
+    user.email ? `guest_email.eq.${user.email}` : '',
+    user.phone ? `guest_phone.eq.${user.phone}` : '',
+  ];
+
+  return filters.filter(Boolean).join(',');
+}
 
 export function useRSVP() {
   const [loading, setLoading] = useState(false);
@@ -21,14 +32,7 @@ export function useRSVP() {
         .from('event_attendees')
         .select('id')
         .eq('event_id', eventId)
-        .or(
-          [
-            `member_id.eq.${user.id}`,
-            user.email ? `guest_email.eq.${user.email}` : '',
-          ]
-            .filter(Boolean)
-            .join(',')
-        )
+        .or(buildRSVPMatchingFilters(user))
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -42,14 +46,7 @@ export function useRSVP() {
             guest_count: guestCount,
           })
           .eq('event_id', eventId)
-          .or(
-            [
-              `member_id.eq.${user.id}`,
-              user.email ? `guest_email.eq.${user.email}` : '',
-            ]
-              .filter(Boolean)
-              .join(',')
-          );
+          .or(buildRSVPMatchingFilters(user));
 
         if (updateError) throw updateError;
       } else {
@@ -88,14 +85,7 @@ export function useRSVP() {
         .from('event_attendees')
         .update({ rsvp_status: 'canceled' })
         .eq('event_id', eventId)
-        .or(
-          [
-            `member_id.eq.${user.id}`,
-            user.email ? `guest_email.eq.${user.email}` : '',
-          ]
-            .filter(Boolean)
-            .join(',')
-        );
+        .or(buildRSVPMatchingFilters(user));
 
       if (updateError) throw updateError;
 
