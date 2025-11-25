@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info, Lock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
 import { SubscribeButton } from '@/components/events/SubscribeButton';
@@ -58,6 +59,18 @@ function getPopulatedLocations(event: Event): LocationInfo[] {
   }
 
   return locations;
+}
+
+function buildRSVPMatchingFilters(user: User | null) {
+  if (!user) return '';
+
+  const filters = [
+    `member_id.eq.${user.id}`,
+    user.email ? `guest_email.eq.${user.email}` : '',
+    user.phone ? `guest_phone.eq.${user.phone}` : '',
+  ];
+
+  return filters.filter(Boolean).join(',');
 }
 
 // Helper to fetch event by slug or ID
@@ -186,27 +199,26 @@ export default async function EventDetailPage({
 
   // Check authenticated user's RSVP status first so canceled RSVPs don't get overridden by cookies
   if (user) {
-    const { data: rsvp } = await supabase
-      .from('event_attendees')
-      .select('id, rsvp_status')
-      .eq('event_id', event.id)
-      .or(
-        [
-          `member_id.eq.${user.id}`,
-          user.email ? `guest_email.eq.${user.email}` : '',
-        ]
-          .filter(Boolean)
-          .join(',')
-      )
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const rsvpFilters = buildRSVPMatchingFilters(user);
 
-    hasRSVPd = rsvp?.rsvp_status === 'attending';
+    if (rsvpFilters) {
+      const { data: rsvp } = await supabase
+        .from('event_attendees')
+        .select('id, rsvp_status')
+        .eq('event_id', event.id)
+        .or(rsvpFilters)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      hasRSVPd = rsvp?.rsvp_status === 'attending';
+    }
   }
 
-  // Check for RSVP cookie (set when guest registers) only if no confirmed RSVP via auth
-  if (!hasRSVPd) {
+  // Check for RSVP cookie (set when guest registers) only if the user is not authenticated
+  // This prevents canceled RSVPs tied to an authenticated account (including phone-based) from
+  // being overridden by a stale cookie value.
+  if (!hasRSVPd && !user) {
     const cookieStore = cookies();
     const rsvpCookie = cookieStore.get(`rsvp_${event.id}`);
     if (rsvpCookie?.value === 'true') {
