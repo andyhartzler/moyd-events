@@ -10,9 +10,9 @@ export function MobileMenu() {
     fontFamily: 'Montserrat',
     fontStyle: 'normal',
     fontWeight: 800,
-    fontSize: '1.1rem',
+    fontSize: '6vw',
     letterSpacing: '-0.07em',
-    height: '1.8vw',
+    lineHeight: 1.1,
   };
 
   return (
@@ -43,7 +43,7 @@ export function MobileMenu() {
           className="fixed inset-0 bg-[#273351] z-40 flex items-center justify-center"
           onClick={() => setIsOpen(false)}
         >
-          <nav className="flex flex-col items-center space-y-8">
+          <nav className="flex flex-col items-center" style={{ gap: '3vw' }}>
             <Link
               href="https://moyoungdemocrats.org/our-team"
               className="text-white hover:text-white/80 transition-colors uppercase"
