@@ -1,7 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
+
+function buildRSVPMatchingFilters(user: User) {
+  const filters = [
+    `member_id.eq.${user.id}`,
+    user.email ? `guest_email.eq.${user.email}` : '',
+    user.phone ? `guest_phone.eq.${user.phone}` : '',
+  ];
+
+  return filters.filter(Boolean).join(',');
+}
 
 export function useRSVP() {
   const [loading, setLoading] = useState(false);
@@ -21,14 +32,7 @@ export function useRSVP() {
         .from('event_attendees')
         .select('id')
         .eq('event_id', eventId)
-        .or(
-          [
-            `member_id.eq.${user.id}`,
-            user.email ? `guest_email.eq.${user.email}` : '',
-          ]
-            .filter(Boolean)
-            .join(',')
-        )
+        .or(buildRSVPMatchingFilters(user))
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -42,14 +46,7 @@ export function useRSVP() {
             guest_count: guestCount,
           })
           .eq('event_id', eventId)
-          .or(
-            [
-              `member_id.eq.${user.id}`,
-              user.email ? `guest_email.eq.${user.email}` : '',
-            ]
-              .filter(Boolean)
-              .join(',')
-          );
+          .or(buildRSVPMatchingFilters(user));
 
         if (updateError) throw updateError;
       } else {
@@ -75,41 +72,5 @@ export function useRSVP() {
     }
   };
 
-  const cancelRSVP = async (eventId: string) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      // Mark RSVP as canceled instead of deleting the record
-      const { error: updateError } = await supabase
-        .from('event_attendees')
-        .update({ rsvp_status: 'canceled' })
-        .eq('event_id', eventId)
-        .or(
-          [
-            `member_id.eq.${user.id}`,
-            user.email ? `guest_email.eq.${user.email}` : '',
-          ]
-            .filter(Boolean)
-            .join(',')
-        );
-
-      if (updateError) throw updateError;
-
-      // Clear RSVP cookie so the event page doesn't treat the user as attending after canceling
-      document.cookie = `rsvp_${eventId}=false; path=/; max-age=0; SameSite=Lax`;
-
-      return true;
-    } catch (err: any) {
-      setError(err.message);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { rsvp, cancelRSVP, loading, error };
+  return { rsvp, loading, error };
 }
