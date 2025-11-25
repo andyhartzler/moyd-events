@@ -7,12 +7,12 @@ export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinkStyle = {
-    fontFamily: 'Montserrat',
+    fontFamily: 'Montserrat, sans-serif',
     fontStyle: 'normal',
     fontWeight: 800,
-    fontSize: '6vw',
+    fontSize: 'clamp(26px, 7vw, 32px)',
     letterSpacing: '-0.07em',
-    lineHeight: 1.1,
+    lineHeight: 1.25,
   };
 
   return (
