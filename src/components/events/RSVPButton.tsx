@@ -32,7 +32,8 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
     // Check if user is logged in
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
+    // Allow cancellation for guest RSVPs using stored contact info
+    if (!user && !hasRSVPd) {
       // Redirect to public registration page
       router.push(`/events/${eventId}/register`);
       return;

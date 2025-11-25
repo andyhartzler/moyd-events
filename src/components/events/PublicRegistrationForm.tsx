@@ -236,6 +236,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
 
       // Step 4: Set cookie to remember this RSVP for address reveal
       document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+      document.cookie = `rsvp_${eventId}_phone=${encodeURIComponent(formData.phone)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+      document.cookie = `rsvp_${eventId}_email=${encodeURIComponent(formData.email)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
 
       // Step 5: Show success
       setSuccess(true);
