@@ -9,10 +9,10 @@ export function MobileMenu() {
   const navLinkStyle = {
     fontFamily: 'Montserrat, sans-serif',
     fontStyle: 'normal',
-    fontWeight: 900,
-    fontSize: 'clamp(28px, 8vw, 36px)',
-    letterSpacing: '0.02em',
-    lineHeight: 1.3,
+    fontWeight: 800,
+    fontSize: 'clamp(32px, 9vw, 40px)',
+    letterSpacing: '0.03em',
+    lineHeight: 1.35,
   };
 
   return (
