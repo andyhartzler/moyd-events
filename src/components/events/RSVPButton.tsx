@@ -14,11 +14,14 @@ interface RSVPButtonProps {
 
 export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPButtonProps) {
   const [hasRSVPd, setHasRSVPd] = useState(initialRSVP);
+  const [localError, setLocalError] = useState<string | null>(null);
   const { rsvp, loading, error } = useRSVP();
   const router = useRouter();
   const supabase = createClient();
 
   const handleRSVP = async () => {
+    setLocalError(null);
+
     // Check if event is more than 2 hours past
     const eventDateTime = new Date(eventDate);
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
@@ -40,7 +43,7 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
     }
 
     if (hasRSVPd) {
-      setError("You're already RSVP'd for this event.");
+      setLocalError("You're already RSVP'd for this event.");
       return;
     }
 
@@ -62,8 +65,8 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
       >
         {loading ? 'Loading...' : hasRSVPd ? "You're already RSVP'd" : 'RSVP Now'}
       </Button>
-      {error && (
-        <p className="text-sm text-red-600 mt-2">{error}</p>
+      {(error || localError) && (
+        <p className="text-sm text-red-600 mt-2">{error ?? localError}</p>
       )}
     </div>
   );
