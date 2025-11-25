@@ -201,7 +201,7 @@ export default function RootLayout({
                 CONTACT
               </Link>
               <Link
-                href="https://moyoungdemocrats.org/members"
+                href="https://members.moyoungdemocrats.org"
                 className="text-white hover:text-white/80 transition-colors uppercase"
                 style={{
                   fontFamily: 'Montserrat',
