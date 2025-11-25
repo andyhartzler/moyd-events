@@ -215,8 +215,10 @@ export default async function EventDetailPage({
     }
   }
 
-  // Check for RSVP cookie (set when guest registers) only if no confirmed RSVP via auth
-  if (!hasRSVPd) {
+  // Check for RSVP cookie (set when guest registers) only if the user is not authenticated
+  // This prevents canceled RSVPs tied to an authenticated account (including phone-based) from
+  // being overridden by a stale cookie value.
+  if (!hasRSVPd && !user) {
     const cookieStore = cookies();
     const rsvpCookie = cookieStore.get(`rsvp_${event.id}`);
     if (rsvpCookie?.value === 'true') {
