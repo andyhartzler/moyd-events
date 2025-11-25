@@ -12,7 +12,7 @@ export function SubscribeButton() {
         onClick={() => router.push('/subscribe')}
         variant="default"
         size="lg"
-        className="w-full text-base sm:text-lg py-5 sm:py-6 h-14 whitespace-nowrap leading-tight px-8 sm:px-10"
+        className="w-full text-center text-base sm:text-lg py-5 sm:py-6 min-h-[3.5rem] whitespace-normal sm:whitespace-nowrap leading-tight px-12 sm:px-10"
       >
         Stay Up To Date on Future Events
       </Button>
