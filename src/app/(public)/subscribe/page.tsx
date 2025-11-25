@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/client';
+import { MapPin } from 'lucide-react';
 
 interface FormData {
   name: string;
@@ -28,20 +29,195 @@ const initialFormData: FormData = {
   date_of_birth: '',
 };
 
+type LocationSuggestion = {
+  title: string;
+  address: string;
+  placeId?: string;
+};
+
 export default function SubscribePage() {
   const supabase = createClient();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successName, setSuccessName] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+
+  const googlePlacesReady = useRef(false);
+  const googleScriptLoading = useRef(false);
+  const autocompleteService = useRef<any>(null);
+  const placesService = useRef<any>(null);
+
+  useEffect(() => {
+    const initializeGooglePlaces = () => {
+      if (typeof window === 'undefined') return;
+
+      const google = (window as any).google;
+      if (google?.maps?.places) {
+        autocompleteService.current = new google.maps.places.AutocompleteService();
+        placesService.current = new google.maps.places.PlacesService(document.createElement('div'));
+        googlePlacesReady.current = true;
+        return true;
+      }
+
+      return false;
+    };
+
+    if (initializeGooglePlaces()) return;
+
+    if (googleScriptLoading.current) return;
+    googleScriptLoading.current = true;
+
+    const existingScript = document.querySelector('script[data-google-places]') as HTMLScriptElement | null;
+
+    const script = existingScript || document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyCM0aqoZkzdjfrMNezyDGFqGMaf7gK4z8Y'
+    }&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.dataset.googlePlaces = 'true';
+    script.onload = () => initializeGooglePlaces();
+    script.onerror = () => {
+      googlePlacesReady.current = false;
+      googleScriptLoading.current = false;
+      console.error('Failed to load Google Places library');
+    };
+
+    if (!existingScript) {
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (successName && typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [successName]);
+
+  const stripCountry = (address: string) => address.replace(/,?\s*United States$/i, '').trim();
+
+  const parseAddressComponents = (components: any[] = []) => {
+    const getComponent = (type: string) => components.find(component => component.types?.includes(type));
+
+    const streetNumber = getComponent('street_number')?.long_name || '';
+    const route = getComponent('route')?.long_name || '';
+    const city =
+      getComponent('locality')?.long_name ||
+      getComponent('sublocality')?.long_name ||
+      getComponent('administrative_area_level_3')?.long_name ||
+      getComponent('administrative_area_level_2')?.long_name ||
+      '';
+    const state = getComponent('administrative_area_level_1')?.short_name || '';
+    const zip = getComponent('postal_code')?.long_name || '';
+
+    const street = [streetNumber, route].filter(Boolean).join(' ').trim();
+
+    return { street, city, state, zip };
+  };
+
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+
+    const area = digits.slice(0, 3);
+    const prefix = digits.slice(3, 6);
+    const line = digits.slice(6, 10);
+
+    if (digits.length <= 3) return area ? `(${area}` : '';
+    if (digits.length <= 6) return `(${area}) ${prefix}`;
+    return `(${area}) ${prefix}-${line}`;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
+    const { name, value } = e.target;
+
+    if (name === 'phone') {
+      const formatted = formatPhoneNumber(value);
+      setFormData(prev => ({
+        ...prev,
+        phone: formatted,
+      }));
+      return;
+    }
+
+    if (name === 'address') {
+      handleAddressInput(value);
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
+  };
+
+  const handleAddressInput = (value: string) => {
+    setFormData(prev => ({ ...prev, address: value }));
+
+    if (!googlePlacesReady.current || !autocompleteService.current || !value) {
+      setSuggestions([]);
+      return;
+    }
+
+    autocompleteService.current.getPlacePredictions(
+      {
+        input: value,
+        componentRestrictions: { country: 'us' },
+      },
+      (predictions: any[] = [], status: string) => {
+        if (status !== 'OK' || !predictions?.length) {
+          setSuggestions([]);
+          return;
+        }
+
+        const mapped = predictions.slice(0, 5).map(prediction => ({
+          title: prediction.structured_formatting?.main_text || prediction.description || value,
+          address: stripCountry(prediction.description || value),
+          placeId: prediction.place_id,
+        }));
+
+        setSuggestions(mapped);
+      }
+    );
+  };
+
+  const handleSuggestionSelect = (suggestion: LocationSuggestion) => {
+    const google = (typeof window !== 'undefined' ? (window as any).google : null) as any;
+
+    const finalize = (street: string, city?: string, state?: string, zip?: string) => {
+      setFormData(prev => ({
+        ...prev,
+        address: street || prev.address,
+        city: city || prev.city,
+        state: state || prev.state,
+        zip_code: zip || prev.zip_code,
+      }));
+      setSuggestions([]);
+    };
+
+    if (google && placesService.current && suggestion.placeId) {
+      placesService.current.getDetails(
+        {
+          placeId: suggestion.placeId,
+          fields: ['formatted_address', 'address_components'],
+        },
+        (place: any, status: string) => {
+          if (status === 'OK' && place) {
+            const { street, city, state, zip } = parseAddressComponents(place.address_components || []);
+            const streetValue = street || stripCountry(place.formatted_address || suggestion.address);
+            finalize(streetValue, city, state, zip);
+            return;
+          }
+
+          finalize(suggestion.address, undefined, undefined, undefined);
+        }
+      );
+      return;
+    }
+
+    finalize(suggestion.address, undefined, undefined, undefined);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,14 +226,15 @@ export default function SubscribePage() {
     setError(null);
 
     try {
+      const digitsOnly = formData.phone.replace(/\D/g, '');
+      if (digitsOnly.length !== 10) {
+        setError('Please enter a valid 10-digit phone number.');
+        return;
+      }
+
       let phone_e164 = null;
-      if (formData.phone) {
-        const digitsOnly = formData.phone.replace(/\D/g, '');
-        if (digitsOnly.length === 10) {
-          phone_e164 = `+1${digitsOnly}`;
-        } else if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
-          phone_e164 = `+${digitsOnly}`;
-        }
+      if (digitsOnly.length === 10) {
+        phone_e164 = `+1${digitsOnly}`;
       }
 
       const { error: insertError } = await supabase.from('subscribers').insert({
@@ -94,8 +271,8 @@ export default function SubscribePage() {
   const thanksName = successName || formData.name.trim();
 
   return (
-    <div className="min-h-screen py-10">
-      <div className="container-custom max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen py-10 px-4 flex">
+      <div className="container-custom max-w-2xl mx-auto space-y-6 flex-1 flex flex-col">
         <Link
           href="/"
           className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all"
@@ -104,7 +281,7 @@ export default function SubscribePage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
 
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg flex-1 flex flex-col justify-center">
           {successName ? (
             <div className="text-center space-y-4">
               <h1 className="text-3xl font-bold text-gray-900">
@@ -120,9 +297,9 @@ export default function SubscribePage() {
                 Return to Events
               </Link>
             </div>
-          ) : (
+            ) : (
             <div className="space-y-6">
-              <div>
+              <div className="text-center md:text-left flex flex-col items-center md:items-start">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   Stay Up To Date on Future Events
                 </h1>
@@ -179,6 +356,9 @@ export default function SubscribePage() {
                     required
                     value={formData.phone}
                     onChange={handleChange}
+                    maxLength={14}
+                    inputMode="tel"
+                    autoComplete="tel"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                   />
                 </div>
@@ -199,18 +379,37 @@ export default function SubscribePage() {
                   />
                 </div>
 
-                <div>
+                <div className="relative">
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
                     Address
                   </label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
-                  />
+                  <div className="relative">
+                    <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Start typing to search your address"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                    />
+                  </div>
+                  {suggestions.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                      {suggestions.map((suggestion, idx) => (
+                        <button
+                          key={`${suggestion.title}-${idx}`}
+                          type="button"
+                          onClick={() => handleSuggestionSelect(suggestion)}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                        >
+                          <div className="font-semibold text-gray-900">{suggestion.title}</div>
+                          <div className="text-sm text-gray-600">{suggestion.address}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
