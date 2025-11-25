@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Lock, MapPin } from 'lucide-react';
 
 import { EventMap } from './EventMap';
+import { SubscribePromptModal } from './SubscribePromptModal';
 
 interface LocationInfo {
   name: string;
@@ -35,6 +36,7 @@ export function MultiLocationMaps({
 }: MultiLocationMapsProps) {
   const [calculatedHeight, setCalculatedHeight] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [showSubscribePrompt, setShowSubscribePrompt] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Smaller heights for mobile where layout is stacked vertically
@@ -166,12 +168,12 @@ export function MultiLocationMaps({
               <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
                 <Lock className="w-8 h-8 text-[#273351] mb-2" />
                 {isEventPast ? (
-                  <a
-                    href="#subscribe-form"
+                  <button
+                    onClick={() => setShowSubscribePrompt(true)}
                     className="bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors shadow-md text-sm"
                   >
                     RSVP for Address
-                  </a>
+                  </button>
                 ) : (
                   <Link
                     href={`/events/${eventSlug}/register`}
@@ -185,6 +187,7 @@ export function MultiLocationMaps({
           </div>
         </div>
       ))}
+      <SubscribePromptModal open={showSubscribePrompt} onClose={() => setShowSubscribePrompt(false)} />
     </div>
   );
 }

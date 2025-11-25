@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info, Lock } from 'lucide-react';
+import { Calendar, MapPin, Clock, ArrowLeft, Share2, Info } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { RSVPButton } from '@/components/events/RSVPButton';
 import { SubscribeButton } from '@/components/events/SubscribeButton';
-import { EventMap } from '@/components/events/EventMap';
+import { LocationMapCard } from '@/components/events/LocationMapCard';
 import { MultiLocationMaps } from '@/components/events/MultiLocationMaps';
 import { formatEventDate } from '@/lib/utils/formatters';
 import { parseEventSlug } from '@/lib/utils/slugify';
@@ -328,59 +328,15 @@ export default async function EventDetailPage({
               ) : (
                 /* Single Location - grows to fill remaining column height */
                 displayLocation && (
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-soft p-5 lg:flex-1 flex flex-col">
-                    <h2 className="text-xl font-bold text-[#273351] mb-2 flex items-center">
-                      <MapPin className="w-5 h-5 mr-2" />
-                      Location
-                    </h2>
-                    <div className="mb-3">
-                      {!isMultiLocation && event.location_address && !shouldHideAddress ? (
-                        <a
-                          href={`https://maps.apple.com/?address=${encodeURIComponent(event.location_address)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-gray-700 hover:text-[#273351] transition-colors"
-                        >
-                          <span className="font-semibold">{displayLocation}</span>
-                          <span className="mx-2">·</span>
-                          <span className="underline">{event.location_address}</span>
-                        </a>
-                      ) : (
-                        <p className="text-sm font-semibold text-gray-900">{displayLocation}</p>
-                      )}
-                    </div>
-
-                    {/* Apple Maps Integration - grows to fill available space */}
-                    <div className="relative flex-1 min-h-[200px]">
-                      <div className={`h-full ${shouldHideAddress ? 'blur-sm' : ''}`}>
-                        <EventMap
-                          location={displayLocation}
-                          locationAddress={shouldHideAddress ? null : (!isMultiLocation ? event.location_address : null)}
-                          eventTitle={event.title}
-                        />
-                      </div>
-                      {shouldHideAddress && (
-                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center">
-                          <Lock className="w-10 h-10 text-[#273351] mb-3" />
-                          {isEventPast ? (
-                            <a
-                              href="#subscribe-form"
-                              className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
-                            >
-                              RSVP for the Address
-                            </a>
-                          ) : (
-                            <Link
-                              href={`/events/${params.id}/register`}
-                              className="bg-primary text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors shadow-md"
-                            >
-                              RSVP for the Address
-                            </Link>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <LocationMapCard
+                    displayLocation={displayLocation}
+                    eventTitle={event.title}
+                    locationAddress={event.location_address}
+                    shouldHideAddress={shouldHideAddress}
+                    isEventPast={isEventPast}
+                    eventSlug={params.id}
+                    isMultiLocation={isMultiLocation}
+                  />
                 )
               )}
             </div>
