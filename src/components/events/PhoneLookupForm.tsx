@@ -48,11 +48,13 @@ export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone 
       if (data.success && data.found) {
         // Successfully RSVPd - set cookie to remember this RSVP
         document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+        document.cookie = `rsvp_${eventId}_phone=${encodeURIComponent(phone)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
         setUserName(data.name || '');
         setStep('success');
       } else if (!data.success && data.found) {
         // Already registered - set cookie to remember this RSVP
         document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+        document.cookie = `rsvp_${eventId}_phone=${encodeURIComponent(phone)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
         setUserName(data.name || '');
         setStep('already-registered');
       } else if (!data.found) {
