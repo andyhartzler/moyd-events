@@ -14,11 +14,14 @@ interface RSVPButtonProps {
 
 export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPButtonProps) {
   const [hasRSVPd, setHasRSVPd] = useState(initialRSVP);
-  const { rsvp, cancelRSVP, loading, error } = useRSVP();
+  const [localError, setLocalError] = useState<string | null>(null);
+  const { rsvp, loading, error } = useRSVP();
   const router = useRouter();
   const supabase = createClient();
 
   const handleRSVP = async () => {
+    setLocalError(null);
+
     // Check if event is more than 2 hours past
     const eventDateTime = new Date(eventDate);
     const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
@@ -39,17 +42,14 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
     }
 
     if (hasRSVPd) {
-      const success = await cancelRSVP(eventId);
-      if (success) {
-        setHasRSVPd(false);
-        router.refresh();
-      }
-    } else {
-      const success = await rsvp(eventId);
-      if (success) {
-        setHasRSVPd(true);
-        router.refresh();
-      }
+      setLocalError("You're already RSVP'd for this event.");
+      return;
+    }
+
+    const success = await rsvp(eventId);
+    if (success) {
+      setHasRSVPd(true);
+      router.refresh();
     }
   };
 
@@ -57,15 +57,15 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
     <div>
       <Button
         onClick={handleRSVP}
-        disabled={loading}
         variant={hasRSVPd ? 'outline' : 'default'}
         size="lg"
         className="w-full text-lg py-6 h-14"
+        disabled={loading || hasRSVPd}
       >
-        {loading ? 'Loading...' : hasRSVPd ? 'Cancel RSVP' : 'RSVP Now'}
+        {loading ? 'Loading...' : hasRSVPd ? "You're already RSVP'd" : 'RSVP Now'}
       </Button>
-      {error && (
-        <p className="text-sm text-red-600 mt-2">{error}</p>
+      {(error || localError) && (
+        <p className="text-sm text-red-600 mt-2">{error ?? localError}</p>
       )}
     </div>
   );
