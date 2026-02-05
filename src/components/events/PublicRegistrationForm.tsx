@@ -190,24 +190,31 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
         }
       }
 
-      // Step 2: Upsert donor record with occupation and employer
-      const { error: donorError } = await supabase
-        .from('donors')
+      // Step 2: Upsert subscriber record
+      const cleanPhone = formData.phone.replace(/\D/g, '');
+      const phoneE164 = cleanPhone.length === 10 ? `+1${cleanPhone}` : null;
+      const { error: subscriberError } = await supabase
+        .from('subscribers')
         .upsert(
           {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            city: formData.city,
-            state: formData.state,
-            zip: formData.zip_code,
-            occupation: formData.occupation || null,
+            phone_e164: phoneE164,
+            address: formData.street || null,
+            city: formData.city || null,
+            state: formData.state || null,
+            zip_code: formData.zip_code || null,
             employer: formData.employer || null,
+            date_of_birth: formData.date_of_birth || null,
+            source: 'event-registration',
+            subscription_status: 'subscribed',
+            optin_date: new Date().toISOString(),
           },
           { onConflict: 'email' }
         );
 
-      if (donorError) throw donorError;
+      if (subscriberError) throw subscriberError;
 
       // Step 3: ALWAYS create or update event_attendees record
       const attendeePayload = {
