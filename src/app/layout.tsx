@@ -5,7 +5,9 @@ import Image from 'next/image';
 import Script from 'next/script';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
+import { Suspense } from 'react';
 import { MobileMenu } from '@/components/MobileMenu';
+import { Tracker } from '@/components/analytics/Tracker';
 import './globals.css';
 
 const montserrat = Montserrat({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'] });
@@ -297,6 +299,7 @@ export default function RootLayout({
         </footer>
         <SpeedInsights />
         <Analytics />
+        <Suspense fallback={null}><Tracker /></Suspense>
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Loader2, Phone, AlertCircle } from 'lucide-react';
 import { PublicRegistrationForm } from './PublicRegistrationForm';
+import { useFormTracking } from '@/components/analytics/useFormTracking';
 
 interface PhoneLookupFormProps {
   eventId: string;
@@ -11,9 +12,11 @@ interface PhoneLookupFormProps {
   eventType: string | null;
   youngDemsOnly?: boolean;
   prefilledPhone?: string;
+  trackingId?: string;
 }
 
-export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, prefilledPhone }: PhoneLookupFormProps) {
+export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, prefilledPhone, trackingId }: PhoneLookupFormProps) {
+  const tracker = useFormTracking(eventId, trackingId);
   const [step, setStep] = useState<'phone' | 'success' | 'not-found' | 'already-registered' | 'age-restricted'>('phone');
   const [phone, setPhone] = useState(prefilledPhone || '');
   const [userName, setUserName] = useState<string>('');
@@ -24,6 +27,7 @@ export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, 
 
   const handlePhoneLookup = async (e: React.FormEvent) => {
     e.preventDefault();
+    tracker.submitAttempt({ phone: !!phone.trim() });
     setLoading(true);
     setError(null);
 
@@ -68,6 +72,7 @@ export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, 
           }),
         }).catch(() => {});
 
+        tracker.submitSuccess();
         setUserName(data.name || '');
         setStep('success');
       } else if (!data.success && data.found) {
@@ -82,6 +87,7 @@ export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, 
       }
     } catch (err: any) {
       console.error('Lookup error:', err);
+      tracker.submitError(err?.message || 'Lookup error');
       setError('Failed to process your request. Please try again.');
     } finally {
       setLoading(false);
@@ -113,6 +119,8 @@ export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, 
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                onFocus={() => tracker.fieldFocus('phone')}
+                onBlur={() => tracker.fieldBlur('phone', !!phone.trim())}
                 className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                 placeholder="(555) 123-4567"
                 required
@@ -264,6 +272,7 @@ export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, 
           eventType={eventType}
           youngDemsOnly={youngDemsOnly}
           prefilledPhone={phone}
+          trackingId={trackingId}
         />
       </div>
     );

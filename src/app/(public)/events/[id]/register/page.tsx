@@ -11,7 +11,7 @@ export default async function PublicRegisterPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { phone?: string };
+  searchParams: { phone?: string; tid?: string };
 }) {
   const supabase = createClient();
 
@@ -84,6 +84,7 @@ export default async function PublicRegisterPage({
             eventType={event.event_type}
             youngDemsOnly={event.young_dems_only ?? false}
             prefilledPhone={searchParams.phone}
+            trackingId={searchParams.tid}
           />
         </div>
       </div>

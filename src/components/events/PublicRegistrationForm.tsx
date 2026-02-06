@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, AlertCircle } from 'lucide-react';
+import { useFormTracking } from '@/components/analytics/useFormTracking';
 
 interface PublicRegistrationFormProps {
   eventId: string;
@@ -11,6 +12,7 @@ interface PublicRegistrationFormProps {
   eventType: string | null;
   youngDemsOnly?: boolean;
   prefilledPhone?: string;
+  trackingId?: string;
 }
 
 interface FormData {
@@ -26,7 +28,8 @@ interface FormData {
   occupation: string;
 }
 
-export function PublicRegistrationForm({ eventId, eventName, eventType, youngDemsOnly, prefilledPhone }: PublicRegistrationFormProps) {
+export function PublicRegistrationForm({ eventId, eventName, eventType, youngDemsOnly, prefilledPhone, trackingId }: PublicRegistrationFormProps) {
+  const tracker = useFormTracking(eventId, trackingId);
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -142,6 +145,11 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
     if (!validateForm()) {
       return;
     }
+
+    // Track submit attempt with field fill status
+    tracker.submitAttempt(
+      Object.fromEntries(Object.entries(formData).map(([k, v]) => [k, !!v.trim()]))
+    );
 
     setLoading(true);
     setError(null);
@@ -292,10 +300,12 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
         }),
       }).catch(() => {});
 
-      // Step 6: Show success
+      // Step 6: Track success and show
+      tracker.submitSuccess();
       setSuccess(true);
     } catch (err: any) {
       console.error('Registration error:', err);
+      tracker.submitError(err?.message || 'Registration error');
       setError('An error occurred while registering. Please try again.');
     } finally {
       setLoading(false);
@@ -379,6 +389,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
           name="name"
           value={formData.name}
           onChange={handleChange}
+          onFocus={() => tracker.fieldFocus('name')}
+          onBlur={() => tracker.fieldBlur('name', !!formData.name.trim())}
           className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
             errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
@@ -399,6 +411,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
           name="email"
           value={formData.email}
           onChange={handleChange}
+          onFocus={() => tracker.fieldFocus('email')}
+          onBlur={() => tracker.fieldBlur('email', !!formData.email.trim())}
           className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
             errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
@@ -419,6 +433,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
           name="phone"
           value={formData.phone}
           onChange={handleChange}
+          onFocus={() => tracker.fieldFocus('phone')}
+          onBlur={() => tracker.fieldBlur('phone', !!formData.phone.trim())}
           className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
             errors.phone ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
@@ -439,6 +455,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
           name="date_of_birth"
           value={formData.date_of_birth}
           onChange={handleChange}
+          onFocus={() => tracker.fieldFocus('date_of_birth')}
+          onBlur={() => tracker.fieldBlur('date_of_birth', !!formData.date_of_birth)}
           className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
             errors.date_of_birth ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
@@ -459,6 +477,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
           name="street"
           value={formData.street}
           onChange={handleChange}
+          onFocus={() => tracker.fieldFocus('street')}
+          onBlur={() => tracker.fieldBlur('street', !!formData.street.trim())}
           className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
             errors.street ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
@@ -480,6 +500,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
             name="city"
             value={formData.city}
             onChange={handleChange}
+            onFocus={() => tracker.fieldFocus('city')}
+            onBlur={() => tracker.fieldBlur('city', !!formData.city.trim())}
             className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
               errors.city ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
             }`}
@@ -568,6 +590,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
               name="zip_code"
               value={formData.zip_code}
               onChange={handleChange}
+              onFocus={() => tracker.fieldFocus('zip_code')}
+              onBlur={() => tracker.fieldBlur('zip_code', !!formData.zip_code.trim())}
               className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
                 errors.zip_code ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
               }`}
@@ -591,6 +615,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
           name="employer"
           value={formData.employer}
           onChange={handleChange}
+          onFocus={() => tracker.fieldFocus('employer')}
+          onBlur={() => tracker.fieldBlur('employer', !!formData.employer.trim())}
           className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
             errors.employer ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
@@ -611,6 +637,8 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
           name="occupation"
           value={formData.occupation}
           onChange={handleChange}
+          onFocus={() => tracker.fieldFocus('occupation')}
+          onBlur={() => tracker.fieldBlur('occupation', !!formData.occupation.trim())}
           className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary/20 transition-all ${
             errors.occupation ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-primary'
           }`}
