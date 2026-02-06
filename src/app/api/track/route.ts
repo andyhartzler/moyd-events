@@ -87,22 +87,14 @@ export async function POST(request: NextRequest) {
 
     // If tracking_id present, update tracking_links
     if (body.tracking_id) {
+      // Set clicked_at on first click
       await supabase
         .from('tracking_links')
-        .update({
-          clicked_at: new Date().toISOString(),
-          click_count: undefined, // handled below
-        })
+        .update({ clicked_at: new Date().toISOString() })
         .eq('token', body.tracking_id)
         .is('clicked_at', null);
 
       // Increment click count
-      await supabase.rpc('increment_click_count', { tid: body.tracking_id }).catch(() => {
-        // Fallback: just do a raw increment via direct update
-        // This may not work without an RPC, so we'll just set it
-      });
-
-      // Simple approach: fetch current and increment
       const { data: tl } = await supabase
         .from('tracking_links')
         .select('click_count')
