@@ -145,9 +145,11 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
     setError(null);
 
     try {
-      // Determine if they qualify as a member (under 36 AND living in MO)
-      const age = calculateAge(formData.date_of_birth);
-      const isEligibleMember = age < 36 && formData.state === 'MO';
+      // Determine if they qualify as a member (35 or under, not turning 36 this calendar year, AND living in MO)
+      const birthYear = new Date(formData.date_of_birth).getFullYear();
+      const currentYear = new Date().getFullYear();
+      const ageTurningThisYear = currentYear - birthYear;
+      const isEligibleMember = ageTurningThisYear <= 35 && formData.state === 'MO';
 
       let memberId: string | null = null;
 
