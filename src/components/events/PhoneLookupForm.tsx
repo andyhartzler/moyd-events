@@ -9,11 +9,12 @@ interface PhoneLookupFormProps {
   eventId: string;
   eventName: string;
   eventType: string | null;
+  youngDemsOnly?: boolean;
   prefilledPhone?: string;
 }
 
-export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone }: PhoneLookupFormProps) {
-  const [step, setStep] = useState<'phone' | 'success' | 'not-found' | 'already-registered'>('phone');
+export function PhoneLookupForm({ eventId, eventName, eventType, youngDemsOnly, prefilledPhone }: PhoneLookupFormProps) {
+  const [step, setStep] = useState<'phone' | 'success' | 'not-found' | 'already-registered' | 'age-restricted'>('phone');
   const [phone, setPhone] = useState(prefilledPhone || '');
   const [userName, setUserName] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -45,7 +46,11 @@ export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone 
       }
 
       // Handle the 3 possible outcomes
-      if (data.success && data.found) {
+      if (data.age_restricted) {
+        // Age restricted - no attendee record created, no notification
+        setUserName(data.name || '');
+        setStep('age-restricted');
+      } else if (data.success && data.found) {
         // Successfully RSVPd - set cookie to remember this RSVP
         document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
         document.cookie = `rsvp_${eventId}_phone=${encodeURIComponent(phone)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
@@ -211,6 +216,35 @@ export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone 
     );
   }
 
+  // Step 2d: Age restricted
+  if (step === 'age-restricted') {
+    return (
+      <div className="text-center py-8">
+        <div className="mb-8">
+          <AlertCircle className="w-24 h-24 text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            Age Restriction
+          </h3>
+          <p className="text-lg text-gray-600 mb-4">
+            This event is for attendees 35 and under.
+          </p>
+          <p className="text-gray-600">
+            We've added you to our mailing list so you'll hear about future events open to all ages!
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            onClick={() => router.push('/')}
+            className="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-all shadow-md"
+          >
+            Browse More Events
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Step 2c: Not found - show full registration form
   if (step === 'not-found') {
     return (
@@ -228,6 +262,7 @@ export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone 
           eventId={eventId}
           eventName={eventName}
           eventType={eventType}
+          youngDemsOnly={youngDemsOnly}
           prefilledPhone={phone}
         />
       </div>

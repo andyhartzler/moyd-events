@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 
 interface PublicRegistrationFormProps {
   eventId: string;
   eventName: string;
   eventType: string | null;
+  youngDemsOnly?: boolean;
   prefilledPhone?: string;
 }
 
@@ -25,7 +26,7 @@ interface FormData {
   occupation: string;
 }
 
-export function PublicRegistrationForm({ eventId, eventName, eventType, prefilledPhone }: PublicRegistrationFormProps) {
+export function PublicRegistrationForm({ eventId, eventName, eventType, youngDemsOnly, prefilledPhone }: PublicRegistrationFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -41,6 +42,7 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [ageRestricted, setAgeRestricted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
@@ -218,6 +220,14 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
 
       if (subscriberError) throw subscriberError;
 
+      // Check age restriction for Young Dems Only events
+      const isTooOld = youngDemsOnly && ageTurningThisYear >= 36;
+
+      if (isTooOld) {
+        setAgeRestricted(true);
+        return;
+      }
+
       // Step 3: ALWAYS create or update event_attendees record
       const attendeeData = {
         guest_name: formData.name,
@@ -291,6 +301,35 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
       setLoading(false);
     }
   };
+
+  // Age-restricted state
+  if (ageRestricted) {
+    return (
+      <div className="text-center py-8">
+        <div className="mb-8">
+          <AlertCircle className="w-24 h-24 text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            Age Restriction
+          </h3>
+          <p className="text-lg text-gray-600 mb-4">
+            This event is for attendees 35 and under.
+          </p>
+          <p className="text-gray-600">
+            We've added you to our mailing list so you'll hear about future events open to all ages!
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            onClick={() => router.push('/')}
+            className="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-all shadow-md"
+          >
+            Browse More Events
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Success state
   if (success) {

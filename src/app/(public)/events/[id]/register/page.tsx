@@ -83,6 +83,7 @@ export default async function PublicRegisterPage({
             eventId={event.id}
             eventName={event.title}
             eventType={event.event_type}
+            youngDemsOnly={event.young_dems_only ?? false}
             prefilledPhone={searchParams.phone}
           />
         </div>
