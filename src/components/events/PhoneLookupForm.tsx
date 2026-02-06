@@ -49,6 +49,20 @@ export function PhoneLookupForm({ eventId, eventName, eventType, prefilledPhone 
         // Successfully RSVPd - set cookie to remember this RSVP
         document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
         document.cookie = `rsvp_${eventId}_phone=${encodeURIComponent(phone)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+
+        // Fire-and-forget RSVP notification via text/iMessage
+        const cleanDigits = phone.replace(/\D/g, '');
+        const phoneE164 = cleanDigits.length === 10 ? `+1${cleanDigits}` : phone;
+        fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/send-rsvp-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone_e164: phoneE164,
+            event_id: eventId,
+            attendee_name: data.name || '',
+          }),
+        }).catch(() => {});
+
         setUserName(data.name || '');
         setStep('success');
       } else if (!data.success && data.found) {

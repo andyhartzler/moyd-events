@@ -271,7 +271,18 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
       document.cookie = `rsvp_${eventId}_phone=${encodeURIComponent(formData.phone)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
       document.cookie = `rsvp_${eventId}_email=${encodeURIComponent(formData.email)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
 
-      // Step 5: Show success
+      // Step 5: Fire-and-forget RSVP notification via text/iMessage
+      fetch('https://faajpcarasilbfndzkmd.supabase.co/functions/v1/send-rsvp-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone_e164: phoneE164,
+          event_id: eventId,
+          attendee_name: formData.name,
+        }),
+      }).catch(() => {});
+
+      // Step 6: Show success
       setSuccess(true);
     } catch (err: any) {
       console.error('Registration error:', err);
