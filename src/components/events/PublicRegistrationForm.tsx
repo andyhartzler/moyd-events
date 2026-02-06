@@ -217,12 +217,10 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
       if (subscriberError) throw subscriberError;
 
       // Step 3: ALWAYS create or update event_attendees record
-      const attendeePayload = {
-        event_id: eventId,
-        member_id: memberId, // Will be null for non-members
-        guest_name: formData.name, // Always set
-        guest_email: formData.email, // Always set
-        guest_phone: formData.phone, // Always set
+      const attendeeData = {
+        guest_name: formData.name,
+        guest_email: formData.email,
+        guest_phone: formData.phone,
         date_of_birth: formData.date_of_birth,
         address: formData.street,
         city: formData.city,
@@ -235,11 +233,36 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, prefille
         checked_in: false,
       };
 
-      const { error: attendeeError } = await supabase
+      // Check for existing attendee by email or member_id
+      let existingQuery = supabase
         .from('event_attendees')
-        .upsert(attendeePayload, { onConflict: 'event_id,member_id' });
+        .select('id')
+        .eq('event_id', eventId);
 
-      if (attendeeError) throw attendeeError;
+      if (memberId) {
+        existingQuery = existingQuery.eq('member_id', memberId);
+      } else {
+        existingQuery = existingQuery.eq('guest_email', formData.email);
+      }
+
+      const { data: existingAttendee } = await existingQuery.maybeSingle();
+
+      if (existingAttendee) {
+        const { error: updateError } = await supabase
+          .from('event_attendees')
+          .update(attendeeData)
+          .eq('id', existingAttendee.id);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('event_attendees')
+          .insert({
+            event_id: eventId,
+            member_id: memberId,
+            ...attendeeData,
+          });
+        if (insertError) throw insertError;
+      }
 
       // Step 4: Set cookie to remember this RSVP for address reveal
       document.cookie = `rsvp_${eventId}=true; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
