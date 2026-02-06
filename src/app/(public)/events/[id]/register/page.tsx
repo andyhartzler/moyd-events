@@ -28,7 +28,6 @@ export default async function PublicRegisterPage({
       .gte('event_date', slugData.dateStart)
       .lte('event_date', slugData.dateEnd)
       .ilike('title', `%${slugData.titlePattern}%`)
-      .eq('status', 'published')
       .limit(1)
       .single();
 
