@@ -177,8 +177,10 @@ export async function generateMetadata({
 
 export default async function EventDetailPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams: { phone?: string };
 }) {
   const supabase = createClient();
   const event = await getEventBySlugOrId(params.id) as Event | null;
@@ -192,6 +194,9 @@ export default async function EventDetailPage({
   const eventDateTime = new Date(event.event_date);
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
   const isEventPast = eventDateTime < twoHoursAgo;
+
+  // If URL has a phone param, this is a direct registration link — allow RSVP even for past events
+  const hasPhoneParam = !!searchParams.phone;
 
   // Check if user has RSVPd (via auth OR cookie for guest RSVPs)
   const { data: { user } } = await supabase.auth.getUser();
@@ -289,14 +294,15 @@ export default async function EventDetailPage({
             {/* Left Column - Stacked tiles */}
             <div className="flex flex-col gap-4 lg:col-start-1">
               {/* RSVP Button for upcoming events, Subscribe for past events */}
-              {isEventPast ? (
+              {/* If phone param is present (direct link), always show RSVP even for past events */}
+              {isEventPast && !hasPhoneParam ? (
                 <div id="subscribe-form">
                   <SubscribeButton />
                 </div>
               ) : (
                 event.rsvp_enabled && (
                   <div>
-                    <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} eventDate={event.event_date} />
+                    <RSVPButton eventId={event.id} hasRSVPd={hasRSVPd} eventDate={event.event_date} bypassPastCheck={hasPhoneParam} />
                   </div>
                 )
               )}

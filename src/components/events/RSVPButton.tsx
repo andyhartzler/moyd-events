@@ -10,9 +10,10 @@ interface RSVPButtonProps {
   eventId: string;
   hasRSVPd: boolean;
   eventDate: string;
+  bypassPastCheck?: boolean;
 }
 
-export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPButtonProps) {
+export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate, bypassPastCheck }: RSVPButtonProps) {
   const [hasRSVPd, setHasRSVPd] = useState(initialRSVP);
   const [localError, setLocalError] = useState<string | null>(null);
   const { rsvp, loading, error } = useRSVP();
@@ -22,14 +23,16 @@ export function RSVPButton({ eventId, hasRSVPd: initialRSVP, eventDate }: RSVPBu
   const handleRSVP = async () => {
     setLocalError(null);
 
-    // Check if event is more than 2 hours past
-    const eventDateTime = new Date(eventDate);
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    // Check if event is more than 2 hours past (skip if direct registration link)
+    if (!bypassPastCheck) {
+      const eventDateTime = new Date(eventDate);
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
-    if (eventDateTime < twoHoursAgo) {
-      // Redirect to event-passed page
-      router.push(`/events/${eventId}/event-passed`);
-      return;
+      if (eventDateTime < twoHoursAgo) {
+        // Redirect to event-passed page
+        router.push(`/events/${eventId}/event-passed`);
+        return;
+      }
     }
 
     // Check if user is logged in
