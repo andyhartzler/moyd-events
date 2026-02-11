@@ -253,24 +253,51 @@ export function PublicRegistrationForm({ eventId, eventName, eventType, youngDem
         checked_in: false,
       };
 
-      // Check for existing attendee by email or member_id
-      let existingQuery = supabase
-        .from('event_attendees')
-        .select('id')
-        .eq('event_id', eventId);
+      // Check for existing attendee by email, member_id, or phone (placeholder records)
+      let existingAttendee = null;
 
       if (memberId) {
-        existingQuery = existingQuery.eq('member_id', memberId);
-      } else {
-        existingQuery = existingQuery.eq('guest_email', formData.email);
+        const { data } = await supabase
+          .from('event_attendees')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('member_id', memberId)
+          .maybeSingle();
+        existingAttendee = data;
       }
 
-      const { data: existingAttendee } = await existingQuery.maybeSingle();
+      if (!existingAttendee) {
+        const { data } = await supabase
+          .from('event_attendees')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('guest_email', formData.email)
+          .maybeSingle();
+        existingAttendee = data;
+      }
+
+      // Also check by phone to find placeholder records (phone only, no name yet)
+      if (!existingAttendee && cleanPhone.length === 10) {
+        // Try E164 format first, then raw digits
+        for (const phoneFormat of [phoneE164, cleanPhone]) {
+          if (!phoneFormat) continue;
+          const { data } = await supabase
+            .from('event_attendees')
+            .select('id, guest_name')
+            .eq('event_id', eventId)
+            .eq('guest_phone', phoneFormat)
+            .maybeSingle();
+          if (data) {
+            existingAttendee = data;
+            break;
+          }
+        }
+      }
 
       if (existingAttendee) {
         const { error: updateError } = await supabase
           .from('event_attendees')
-          .update(attendeeData)
+          .update({ ...attendeeData, member_id: memberId })
           .eq('id', existingAttendee.id);
         if (updateError) throw updateError;
       } else {
